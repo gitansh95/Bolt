@@ -54,7 +54,7 @@ def f0_defect_constant_T(f, p1, p2, p3, params):
     af.eval(fermi_dirac)
 
     zeroth_moment = f - fermi_dirac
-    
+
     eqn_mass_conservation   = af.sum(zeroth_moment, 0)
 
     N_g = domain.N_ghost
@@ -84,7 +84,7 @@ def f0_defect(f, p1, p2, p3, params):
     T   = params.T
 
     for n in range(params.collision_nonlinear_iters):
-        
+
         E_upper = params.E_band
         k       = params.boltzmann_constant
 
@@ -99,7 +99,7 @@ def f0_defect(f, p1, p2, p3, params):
 
         # Solve Ax = b
         # where A == Jacobian,
-        #       x == delta guess (correction to guess), 
+        #       x == delta guess (correction to guess),
         #       b = -residual
 
         fermi_dirac = 1./(af.exp( (E_upper - mu)/(k*T) ) + 1.)
@@ -107,7 +107,7 @@ def f0_defect(f, p1, p2, p3, params):
 
         zeroth_moment =          f - fermi_dirac
         second_moment = E_upper*(f - fermi_dirac)
-    
+
         eqn_mass_conservation   = af.sum(zeroth_moment, 0)
         eqn_energy_conservation = af.sum(second_moment, 0)
 
@@ -116,7 +116,7 @@ def f0_defect(f, p1, p2, p3, params):
         error_energy_conservation = af.max(af.abs(eqn_energy_conservation)[0, N_g:-N_g, N_g:-N_g])
 
         residual   = [eqn_mass_conservation, eqn_energy_conservation]
-        error_norm = np.max([af.max(af.abs(residual[0])), 
+        error_norm = np.max([af.max(af.abs(residual[0])),
                              af.max(af.abs(residual[1]))]
                            )
         print("    ||residual_defect|| = ", error_norm)
@@ -148,12 +148,12 @@ def f0_defect(f, p1, p2, p3, params):
 
     zeroth_moment =          f - fermi_dirac
     second_moment = E_upper*(f - fermi_dirac)
-   
+
     eqn_mass_conservation   = af.sum(zeroth_moment, 0)
     eqn_energy_conservation = af.sum(second_moment, 0)
 
     residual   = [eqn_mass_conservation, eqn_energy_conservation]
-    error_norm = np.max([af.max(af.abs(residual[0])), 
+    error_norm = np.max([af.max(af.abs(residual[0])),
                          af.max(af.abs(residual[1]))]
                        )
     print("    ||residual_defect|| = ", error_norm)
@@ -215,10 +215,10 @@ def f0_ee(f, p1, p2, p3, params):
               [a_20, a_21, a_22, a_23], \
               [a_30, a_31, a_32, a_33]  \
             ]
-        
+
         fermi_dirac = 1./(af.exp( (  E_upper - mu_ee
-                                   - vel_drift_x*p1 - vel_drift_y*p2 
-                                  )/(k*T_ee) 
+                                   - vel_drift_x*p1 - vel_drift_y*p2
+                                  )/(k*T_ee)
                                 ) + 1.
                          )
         af.eval(fermi_dirac)
@@ -249,21 +249,21 @@ def f0_ee(f, p1, p2, p3, params):
 	     )
 
 #        if (error_norm < 1e-13):
-#            params.mu_ee       = mu_ee      
-#            params.T_ee        = T_ee       
+#            params.mu_ee       = mu_ee
+#            params.T_ee        = T_ee
 #            params.vel_drift_x = vel_drift_x
 #            params.vel_drift_y = vel_drift_y
 #            return(fermi_dirac)
 
-        b_0 = eqn_mass_conservation  
+        b_0 = eqn_mass_conservation
         b_1 = eqn_energy_conservation
-        b_2 = eqn_mom_x_conservation 
-        b_3 = eqn_mom_y_conservation 
+        b_2 = eqn_mom_x_conservation
+        b_3 = eqn_mom_y_conservation
         b   = [b_0, b_1, b_2, b_3]
 
         # Solve Ax = b
         # where A == Jacobian,
-        #       x == delta guess (correction to guess), 
+        #       x == delta guess (correction to guess),
         #       b = -residual
 
         A_inv = inverse_4x4_matrix(A)
@@ -277,7 +277,7 @@ def f0_ee(f, p1, p2, p3, params):
         delta_T  = x_1
         delta_vx = x_2
         delta_vy = x_3
-    
+
         mu_ee       = mu_ee       + delta_mu
         T_ee        = T_ee        + delta_T
         vel_drift_x = vel_drift_x + delta_vx
@@ -286,14 +286,14 @@ def f0_ee(f, p1, p2, p3, params):
         af.eval(mu_ee, T_ee, vel_drift_x, vel_drift_y)
 
     # Solved for (mu_ee, T_ee, vel_drift_x, vel_drift_y). Now store in params
-    params.mu_ee       = mu_ee      
-    params.T_ee        = T_ee       
+    params.mu_ee       = mu_ee
+    params.T_ee        = T_ee
     params.vel_drift_x = vel_drift_x
     params.vel_drift_y = vel_drift_y
 
     fermi_dirac = 1./(af.exp( (  E_upper - mu_ee
-                               - vel_drift_x*p1 - vel_drift_y*p2 
-                              )/(k*T_ee) 
+                               - vel_drift_x*p1 - vel_drift_y*p2
+                              )/(k*T_ee)
                             ) + 1.
                      )
     af.eval(fermi_dirac)
@@ -302,7 +302,7 @@ def f0_ee(f, p1, p2, p3, params):
     second_moment  = E_upper*(f - fermi_dirac)
     first_moment_x =      p1*(f - fermi_dirac)
     first_moment_y =      p2*(f - fermi_dirac)
-    
+
     eqn_mass_conservation   = af.sum(zeroth_moment,  0)
     eqn_energy_conservation = af.sum(second_moment,  0)
     eqn_mom_x_conservation  = af.sum(first_moment_x, 0)
@@ -337,20 +337,27 @@ def f0_ee(f, p1, p2, p3, params):
 def RTA(f, q1, q2, p1, p2, p3, moments, params, flag = False):
     """Return BGK operator -(f-f0)/tau."""
 
-    if(af.any_true(params.tau_defect(q1, q2, p1, p2, p3) == 0)):
+    p_x = params.initial_mu * p1**0 * af.cos(p2)
+    p_y = params.initial_mu * p1**0 * af.sin(p2)
+    p_z = params.initial_mu * p3
+
+    if(af.any_true(params.tau_defect(q1, q2, p_x, p_y, p_z) == 0)):
         if (flag == False):
             return(0.*f)
 
-        f = f0_defect_constant_T(f, p1, p2, p3, params)
-    
+        f = f0_defect_constant_T(f, p_x, p_y, p_z, params)
+
         return(f)
 
-    C_f = -(  f - f0_defect_constant_T(f, p1, p2, p3, params) \
-           ) / params.tau_defect(q1, q2, p1, p2, p3) \
-          -(  f - f0_ee(f, p1, p2, p3, params)
-           ) / params.tau_ee(q1, q2, p1, p2, p3)
+    C_f = -(  f - f0_defect_constant_T(f, p_x, p_y, p_z, params) \
+           ) / params.tau_defect(q1, q2, p_x, p_y, p_z) \
+          -(  f - f0_ee(f, p_x, p_y, p_z, params)
+           ) / params.tau_ee(q1, q2, p_x, p_y, p_z)
+
     # When (f - f0) is NaN. Dividing by np.inf doesn't give 0
     # TODO: WORKAROUND
+
+    #C_f = 0.*f
 
     af.eval(C_f)
     return(C_f)
