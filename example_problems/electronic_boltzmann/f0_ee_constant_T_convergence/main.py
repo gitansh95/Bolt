@@ -82,7 +82,7 @@ for time_index, t0 in enumerate(time_array):
         params.collision_nonlinear_iters = params.collision_operator_nonlinear_iters
 
 
-    collision_operator.f0_ee_constant_T(nls.f, nls.q1_center, nls.q2_center, \
+    collision_operator.RTA(nls.f, nls.q1_center, nls.q2_center, \
         nls.p1, nls.p2, nls.p3, compute_moments_imported, params)
     print ('Stepped through collision operator')
 

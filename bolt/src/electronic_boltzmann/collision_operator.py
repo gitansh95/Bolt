@@ -519,11 +519,13 @@ def RTA(f, q1, q2, p1, p2, p3, moments, params, flag = False):
 
     C_f = -(  f - f0_defect_constant_T(f, p_x, p_y, p_z, params) \
            ) / params.tau_defect(q1, q2, p_x, p_y, p_z) \
-          -(  f - f0_ee(f, p_x, p_y, p_z, params)
+          -(  f - f0_ee_constant_T(f, p_x, p_y, p_z, params)
            ) / params.tau_ee(q1, q2, p_x, p_y, p_z)
 
     # When (f - f0) is NaN. Dividing by np.inf doesn't give 0
     # TODO: WORKAROUND
+
+    #C_f = f0_ee_constant_T(f, p_x, p_y, p_z, params)
 
     af.eval(C_f)
     return(C_f)

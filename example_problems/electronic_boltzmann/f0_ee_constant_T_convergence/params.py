@@ -36,7 +36,7 @@ dump_steps = 5
 
 # Time parameters:
 dt      = 0.025/10 # ps
-t_final = dt     # ps
+t_final = 5.*dt     # ps
 
 # Dimensionality considered in velocity space:
 p_dim = 1

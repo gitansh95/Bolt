@@ -251,7 +251,15 @@ def inverse_3x3_matrix(A):
     adjoint[2][2] = cofactors[2][2]
 
 
-    A_inv = adjoint/det
+    A_inv[0][0] = adjoint[0][0]/det
+    A_inv[0][1] = adjoint[0][1]/det
+    A_inv[0][2] = adjoint[0][2]/det
+    A_inv[1][0] = adjoint[1][0]/det
+    A_inv[1][1] = adjoint[1][1]/det
+    A_inv[1][2] = adjoint[1][2]/det
+    A_inv[2][0] = adjoint[2][0]/det
+    A_inv[2][1] = adjoint[2][1]/det
+    A_inv[2][2] = adjoint[2][2]/det
 
 
     arrays_to_be_evaled = \

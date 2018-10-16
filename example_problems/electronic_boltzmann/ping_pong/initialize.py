@@ -36,8 +36,8 @@ def initialize_f(q1, q2, p1, p2, p3, params):
     N_p1 = 1
     N_p2 = 8
     N_p3 = 1
-    N_q1 = 2
-    N_q2 = 5
+    N_q1 = 36
+    N_q2 = 90
     N_g  = 2
 
     f  = np.zeros((N_p1*N_p2*N_p3, N_q1 + 2*N_g, N_q2 + 2*N_g))
