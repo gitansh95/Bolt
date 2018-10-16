@@ -4,6 +4,7 @@ from petsc4py import PETSc
 import numpy as np
 import arrayfire as af
 from .matrix_inverse import inverse_4x4_matrix
+from .matrix_inverse import inverse_3x3_matrix
 import domain
 
 @af.broadcast
@@ -334,6 +335,173 @@ def f0_ee(f, p1, p2, p3, params):
 
     return(fermi_dirac)
 
+@af.broadcast
+def f0_ee_constant_T(f, p1, p2, p3, params):
+
+    # Initial guess
+    mu_ee       = params.mu_ee + 0.01*params.mu_ee
+    T_ee        = params.T_ee
+    vel_drift_x = params.vel_drift_x + 0.01*params.vel_drift_x
+    vel_drift_y = params.vel_drift_y + 0.01*params.vel_drift_y
+    
+    for n in range(params.collision_nonlinear_iters):
+
+        E_upper = params.E_band
+        k       = params.boltzmann_constant
+        
+        tmp1        = (E_upper - mu_ee - p1*vel_drift_x - p2*vel_drift_y)
+        tmp         = (tmp1/(k*T_ee))
+        denominator = (k*T_ee**2.*(af.exp(tmp) + 2. + af.exp(-tmp)) )
+        
+        a_0 = T_ee      / denominator
+        a_1 = tmp1      / denominator
+        a_2 = T_ee * p1 / denominator
+        a_3 = T_ee * p2 / denominator
+
+        af.eval(a_0, a_1, a_2, a_3)
+
+
+        # TODO: Multiply with the integral measure dp1 * dp2
+        a_00 = af.sum(a_0, 0)
+        #a_01 = af.sum(a_1, 0)
+        a_02 = af.sum(a_2, 0)
+        a_03 = af.sum(a_3, 0)
+
+        #a_10 = af.sum(E_upper * a_0, 0)
+        #a_11 = af.sum(E_upper * a_1, 0)
+        #a_12 = af.sum(E_upper * a_2, 0)
+        #a_13 = af.sum(E_upper * a_3, 0)
+
+        a_20 = af.sum(p1 * a_0, 0)
+        #a_21 = af.sum(p1 * a_1, 0)
+        a_22 = af.sum(p1 * a_2, 0)
+        a_23 = af.sum(p1 * a_3, 0)
+
+        a_30 = af.sum(p2 * a_0, 0)
+        #a_31 = af.sum(p2 * a_1, 0)
+        a_32 = af.sum(p2 * a_2, 0)
+        a_33 = af.sum(p2 * a_3, 0)
+
+        A = [ [a_00, a_02, a_03], \
+              [a_20, a_22, a_23], \
+              [a_30, a_32, a_33]  \
+            ]
+        
+        
+        fermi_dirac = 1./(af.exp( (  E_upper - mu_ee
+                                   - vel_drift_x*p1 - vel_drift_y*p2 
+                                  )/(k*T_ee) 
+                                ) + 1.
+                         )
+        af.eval(fermi_dirac)
+
+        zeroth_moment  =         (f - fermi_dirac)
+        #second_moment  = E_upper*(f - fermi_dirac)
+        first_moment_x =      p1*(f - fermi_dirac)
+        first_moment_y =      p2*(f - fermi_dirac)
+
+        eqn_mass_conservation   = af.sum(zeroth_moment,  0)
+        #eqn_energy_conservation = af.sum(second_moment,  0)
+        eqn_mom_x_conservation  = af.sum(first_moment_x, 0)
+        eqn_mom_y_conservation  = af.sum(first_moment_y, 0)
+
+        residual = [eqn_mass_conservation, \
+                    eqn_mom_x_conservation, \
+                    eqn_mom_y_conservation]
+
+        error_norm = np.max([af.max(af.abs(residual[0])),
+                             af.max(af.abs(residual[1])),
+                             af.max(af.abs(residual[2]))
+                            ]
+                           )
+        print("    rank = ", params.rank,
+	      "||residual_ee|| = ", error_norm
+	     )
+
+#        if (error_norm < 1e-13):
+#            params.mu_ee       = mu_ee      
+#            params.T_ee        = T_ee       
+#            params.vel_drift_x = vel_drift_x
+#            params.vel_drift_y = vel_drift_y
+#            return(fermi_dirac)
+
+        b_0 = eqn_mass_conservation  
+        #b_1 = eqn_energy_conservation
+        b_2 = eqn_mom_x_conservation 
+        b_3 = eqn_mom_y_conservation 
+        b   = [b_0, b_2, b_3]
+
+        # Solve Ax = b
+        # where A == Jacobian,
+        #       x == delta guess (correction to guess), 
+        #       b = -residual
+
+        A_inv = inverse_3x3_matrix(A)
+        
+        x_0 = A_inv[0][0]*b[0] + A_inv[0][1]*b[1] + A_inv[0][2]*b[2]
+        #x_1 = A_inv[1][0]*b[0] + A_inv[1][1]*b[1] + A_inv[1][2]*b[2] + A_inv[1][3]*b[3]
+        x_2 = A_inv[1][0]*b[0] + A_inv[1][1]*b[1] + A_inv[1][2]*b[2]
+        x_3 = A_inv[2][0]*b[0] + A_inv[2][1]*b[1] + A_inv[2][2]*b[2]
+
+        delta_mu = x_0
+        #delta_T  = x_1
+        delta_vx = x_2
+        delta_vy = x_3
+        
+        mu_ee       = mu_ee       + delta_mu
+        #T_ee        = T_ee        + delta_T
+        vel_drift_x = vel_drift_x + delta_vx
+        vel_drift_y = vel_drift_y + delta_vy
+
+        af.eval(mu_ee, vel_drift_x, vel_drift_y)
+
+    # Solved for (mu_ee, T_ee, vel_drift_x, vel_drift_y). Now store in params
+    params.mu_ee       = mu_ee      
+    #params.T_ee        = T_ee       
+    params.vel_drift_x = vel_drift_x
+    params.vel_drift_y = vel_drift_y
+
+    fermi_dirac = 1./(af.exp( (  E_upper - mu_ee
+                               - vel_drift_x*p1 - vel_drift_y*p2 
+                              )/(k*T_ee) 
+                            ) + 1.
+                     )
+    af.eval(fermi_dirac)
+
+    zeroth_moment  =          f - fermi_dirac
+    #second_moment  = E_upper*(f - fermi_dirac)
+    first_moment_x =      p1*(f - fermi_dirac)
+    first_moment_y =      p2*(f - fermi_dirac)
+    
+    eqn_mass_conservation   = af.sum(zeroth_moment,  0)
+    #eqn_energy_conservation = af.sum(second_moment,  0)
+    eqn_mom_x_conservation  = af.sum(first_moment_x, 0)
+    eqn_mom_y_conservation  = af.sum(first_moment_y, 0)
+
+    residual = [eqn_mass_conservation, \
+                eqn_mom_x_conservation, \
+                eqn_mom_y_conservation
+               ]
+
+    error_norm = np.max([af.max(af.abs(residual[0])),
+                         af.max(af.abs(residual[1])),
+                         af.max(af.abs(residual[2]))
+                        ]
+                       )
+    print("    rank = ", params.rank,
+	  "||residual_ee|| = ", error_norm
+	 )
+    N_g = domain.N_ghost
+    print("    rank = ", params.rank,
+          "mu_ee = ", af.mean(params.mu_ee[0, N_g:-N_g, N_g:-N_g]),
+          "T_ee = ", af.mean(params.T_ee[0, N_g:-N_g, N_g:-N_g]),
+          "<v_x> = ", af.mean(params.vel_drift_x[0, N_g:-N_g, N_g:-N_g]),
+          "<v_y> = ", af.mean(params.vel_drift_y[0, N_g:-N_g, N_g:-N_g])
+         )
+    PETSc.Sys.Print("    ------------------")
+
+    return(fermi_dirac)
+
 def RTA(f, q1, q2, p1, p2, p3, moments, params, flag = False):
     """Return BGK operator -(f-f0)/tau."""
 
@@ -356,8 +524,6 @@ def RTA(f, q1, q2, p1, p2, p3, moments, params, flag = False):
 
     # When (f - f0) is NaN. Dividing by np.inf doesn't give 0
     # TODO: WORKAROUND
-
-    #C_f = 0.*f
 
     af.eval(C_f)
     return(C_f)
