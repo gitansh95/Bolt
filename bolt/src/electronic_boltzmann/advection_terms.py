@@ -30,8 +30,8 @@ def A_p(q1, q2, p1, p2, p3,
 
     v1, v2 = params.vel_band
 
-    dp1_dt = -e*(E1 + v2*B3_mean/c) # p1 = hcross * k1
-    dp2_dt = -e*(E2 - v1*B3_mean/c) # p2 = hcross * k2
+    dp1_dt = e*(E1 + v2*B3_mean/c) # p1 = hcross * k1
+    dp2_dt = e*(E2 - v1*B3_mean/c) # p2 = hcross * k2
     dp3_dt = 0.*p1
 
     return (dp1_dt, dp2_dt, dp3_dt)

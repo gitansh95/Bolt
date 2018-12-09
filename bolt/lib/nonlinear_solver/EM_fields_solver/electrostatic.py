@@ -427,6 +427,7 @@ def fft_poisson(self, f=None):
     else:
         N_g = self.N_ghost
         rho = af.reorder(  self.physical_system.params.charge_electron \
+                         / self.physical_system.params.epsilon0 \
                          * self.compute_moments('density', f)[:, N_g:-N_g, N_g:-N_g],
                          1, 2, 0
                         )
