@@ -8,17 +8,44 @@ import arrayfire as af
 from .df_dt_fvm import df_dt_fvm
 from bolt.lib.nonlinear_solver.EM_fields_solver.fdtd_explicit \
     import fdtd, fdtd_grid_to_ck_grid
+from bolt.src.electronic_boltzmann.collision_operator \
+     import f0_defect_constant_T
 
 def fvm_timestep_RK2(self, dt):
     
     self._communicate_f()
     self._apply_bcs_f()
+    
+    #f0 = f0_defect_constant_T(self.f, self.p1, self.p2, self.p3,\
+    #        self.physical_system.params)
+
+    #if (self.physical_system.params.mask_enable):
+        #print("masking...")
+        #mask = self.physical_system.params.mask()
+        #print ("collision_operator.py, mask : ", mask.dims())
+        #print ("collision_operator.py, f_0 : ", (self.f).dims())
+        #print ("collision_operator.py, fermi_dirac : ", f0.dims())
+
+        #self.f = mask * f0 + (1-mask) * self.f
+    
 
     f_initial = self.f
     self.f    = self.f + df_dt_fvm(self.f, self, True) * (dt / 2)
 
     self._communicate_f()
     self._apply_bcs_f()
+    
+    #f0 = f0_defect_constant_T(self.f, self.p1, self.p2, self.p3,\
+    #        self.physical_system.params)
+     
+    #if (self.physical_system.params.mask_enable):
+    #    print("masking...")
+    #    mask = self.physical_system.params.mask()
+    #    print ("collision_operator.py, mask : ", mask.dims())
+    #    print ("collision_operator.py, f_0 : ", (self.f).dims())
+    #    print ("collision_operator.py, fermi_dirac : ", f0.dims())
+
+    #   self.f = mask * f0 + (1-mask) * self.f
 
 #    if(    self.physical_system.params.charge_electron != 0
 #       and self.physical_system.params.fields_solver == 'fdtd'

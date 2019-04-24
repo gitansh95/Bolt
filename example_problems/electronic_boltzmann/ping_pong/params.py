@@ -36,7 +36,7 @@ dump_steps = 5
 
 # Time parameters:
 dt      = 0.025/10 # ps
-t_final = 25.0     # ps
+t_final = 1.5     # ps
 
 # Dimensionality considered in velocity space:
 p_dim = 1
@@ -159,3 +159,5 @@ def fermi_dirac(mu, E_band):
 
     af.eval(f)
     return(f)
+
+mask_enable = False

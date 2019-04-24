@@ -126,6 +126,7 @@ for file_number, dump_file in yt.parallel_objects(enumerate(distribution_functio
     dist_func_p_avged = np.mean(dist_func_background, axis = 2)
     pl.contourf(q1_meshgrid, q2_meshgrid, dist_func_p_avged.transpose(), 20, cmap='bwr')
     
+    pl.title(r'Time = ' + "%.2f"%(time_array[file_number]) + " ps")
     pl.xlim([domain.q1_start, domain.q1_end])
     pl.ylim([domain.q2_start, domain.q2_end])
         

@@ -339,10 +339,10 @@ def f0_ee(f, p1, p2, p3, params):
 def f0_ee_constant_T(f, p1, p2, p3, params):
 
     # Initial guess
-    mu_ee       = params.mu_ee + 0.01*params.mu_ee
+    mu_ee       = params.mu_ee
     T_ee        = params.T_ee
-    vel_drift_x = params.vel_drift_x + 0.01*params.vel_drift_x
-    vel_drift_y = params.vel_drift_y + 0.01*params.vel_drift_y
+    vel_drift_x = params.vel_drift_x 
+    vel_drift_y = params.vel_drift_y
     
     for n in range(params.collision_nonlinear_iters):
 
@@ -525,7 +525,11 @@ def RTA(f, q1, q2, p1, p2, p3, moments, params, flag = False):
     # When (f - f0) is NaN. Dividing by np.inf doesn't give 0
     # TODO: WORKAROUND
 
-    #C_f = f0_ee_constant_T(f, p_x, p_y, p_z, params)
+    # Activate the following line to disable collision operator
+    #C_f = 0.*f
+
+    # Activate the following line to test individial collition operators
+    # C_f = f0_ee_constant_T(f, p_x, p_y, p_z, params)
 
     af.eval(C_f)
     return(C_f)

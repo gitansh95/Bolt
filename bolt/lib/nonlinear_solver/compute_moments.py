@@ -65,10 +65,10 @@ def compute_moments(self, moment_name, f=None):
     # af.broadcast(function, *args) performs batched operations on
     # function(*args)
     if(f is None):
-        moment   =   af.sum(af.broadcast(multiply, self.f, moment_variable), 0) \
+        moment   =   self.physical_system.params.initial_mu*af.sum(af.broadcast(multiply, self.f, moment_variable), 0) \
                    * self.dp3 * self.dp2 * self.dp1
     else:
-        moment   =   af.sum(af.broadcast(multiply, f, moment_variable), 0) \
+        moment   =   self.physical_system.params.initial_mu*af.sum(af.broadcast(multiply, f, moment_variable), 0) \
                    * self.dp3 * self.dp2 * self.dp1
 
     af.eval(moment)
