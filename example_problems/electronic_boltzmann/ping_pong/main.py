@@ -1,3 +1,8 @@
+## TODO : Uncomment line to disable collision operator
+## in electronic_boltzmann/collision_operator.py
+## This is a hack (supposed to be done by setting
+## tau_mr = tau_mc = inf in params.py)
+
 import sys
 import arrayfire as af
 import numpy as np

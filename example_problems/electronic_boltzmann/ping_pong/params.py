@@ -33,6 +33,7 @@ solve_for_equilibrium = 0
 
 # File-writing Parameters:
 dump_steps = 5
+dump_dist_after = 1
 
 # Time parameters:
 dt      = 0.025/10 # ps
