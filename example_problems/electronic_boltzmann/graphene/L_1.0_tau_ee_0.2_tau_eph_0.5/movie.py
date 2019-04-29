@@ -34,7 +34,7 @@ import bolt.src.electronic_boltzmann.collision_operator \
 import bolt.src.electronic_boltzmann.moment_defs as moment_defs
 
 # Optimized plot parameters to make beautiful plots:
-pl.rcParams['figure.figsize']  = 8, 8
+pl.rcParams['figure.figsize']  = 12, 7.5
 pl.rcParams['figure.dpi']      = 100
 pl.rcParams['image.cmap']      = 'jet'
 pl.rcParams['lines.linewidth'] = 1.5
@@ -100,7 +100,7 @@ sensor_2_left_indices  = (q2 > sensor_2_left_start ) & (q2 < sensor_2_left_end)
 sensor_2_right_indices = (q2 > sensor_2_right_start) & (q2 < sensor_2_right_end)
 
 filepath = \
-'/home/mchandra/gitansh/bolt/example_problems/electronic_boltzmann/graphene/L_1.0_tau_ee_0.2_tau_eph_0.5/dumps'
+'/home/mchandra/gitansh/gitansh_bolt/example_problems/electronic_boltzmann/graphene/L_1.0_tau_ee_0.2_tau_eph_0.5/dumps'
 moment_files 		  = np.sort(glob.glob(filepath+'/moment*.h5'))
 lagrange_multiplier_files = \
         np.sort(glob.glob(filepath+'/lagrange_multipliers*.h5'))
@@ -122,9 +122,6 @@ for file_number, dump_file in yt.parallel_objects(enumerate(moment_files)):
     density = moments[:, :, 0]
     j_x     = moments[:, :, 1]
     j_y     = moments[:, :, 2]
-    pl.contourf(q1_meshgrid, q2_meshgrid, density, 100, cmap='bwr')
-    pl.title(r'Time = ' + "%.2f"%(time_array[file_number]) + " ps")
-
 
     h5f  = h5py.File(lagrange_multiplier_files[file_number], 'r')
     lagrange_multipliers = h5f['lagrange_multipliers'][:]
@@ -135,7 +132,14 @@ for file_number, dump_file in yt.parallel_objects(enumerate(moment_files)):
     T_ee  = lagrange_multipliers[:, :, 2]
     vel_drift_x = lagrange_multipliers[:, :, 3]
     vel_drift_y = lagrange_multipliers[:, :, 4]
- 
+  
+    print("file_number = ", file_number, "vel_drift_x.shape = ", vel_drift_x.shape)
+    print("file_number = ", file_number, "vel_drift_y.shape = ", vel_drift_y.shape)
+   
+    pl.subplot(1,2,1)
+    pl.contourf(q1_meshgrid, q2_meshgrid, density, 100, cmap='bwr')
+    pl.title(r'Time = ' + "%.2f"%(time_array[file_number]) + " ps")
+
     pl.streamplot(q1, q2, 
                   vel_drift_x, vel_drift_y,
                   density=2, color='blue',
@@ -148,7 +152,19 @@ for file_number, dump_file in yt.parallel_objects(enumerate(moment_files)):
     pl.gca().set_aspect('equal')
     pl.xlabel(r'$x\;(\mu \mathrm{m})$')
     pl.ylabel(r'$y\;(\mu \mathrm{m})$')
+
+    pl.subplot(1,2,2)
+    pl.contourf(q1_meshgrid, q2_meshgrid, density, 100, cmap='bwr')
+    pl.title(r'Time = ' + "%.2f"%(time_array[file_number]) + " ps")
+
+    pl.xlim([domain.q1_start, domain.q1_end])
+    pl.ylim([domain.q2_start, domain.q2_end])
+    
+    pl.gca().set_aspect('equal')
+    pl.xlabel(r'$x\;(\mu \mathrm{m})$')
+    #pl.ylabel(r'$y\;(\mu \mathrm{m})$')
+
     pl.suptitle('$\\tau_\mathrm{mc} = 0.2$ ps, $\\tau_\mathrm{mr} = 0.5$ ps')
     pl.savefig('images/dump_' + '%06d'%file_number + '.png')
     pl.clf()
-
+    

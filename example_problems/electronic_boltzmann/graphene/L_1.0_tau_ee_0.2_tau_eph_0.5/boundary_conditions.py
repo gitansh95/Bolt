@@ -17,9 +17,12 @@ def f_left(f, q1, q2, p1, p2, p3, params):
     
     t     = params.current_time
     omega = 2. * np.pi * params.AC_freq
-    vel_drift_x_in  = params.vel_drift_x_in  * np.sin(omega*t)
+    vel_drift_x_in  = params.vel_drift_x_in * np.sin(omega*t)
+    
+    p_x = mu * p1**0 * af.cos(p2)
+    p_y = mu * p2**0 * af.sin(p2)
 
-    fermi_dirac_in = (1./(af.exp( (E_upper - vel_drift_x_in*p1 - mu)/(k*T) ) + 1.)
+    fermi_dirac_in = (1./(af.exp( (E_upper - vel_drift_x_in*p_x - mu)/(k*T) ) + 1.)
                      )
 
     if (params.contact_geometry=="straight"):
@@ -39,7 +42,7 @@ def f_left(f, q1, q2, p1, p2, p3, params):
 
         vel_drift_x_out = -params.vel_drift_x_in * np.sin(omega*t)
 
-        fermi_dirac_out = (1./(af.exp( (E_upper - vel_drift_x_out*p1 - mu)/(k*T) ) + 1.)
+        fermi_dirac_out = (1./(af.exp( (E_upper - vel_drift_x_out*p_x - mu)/(k*T) ) + 1.)
                           )
     
         # TODO: set these parameters in params.py
@@ -63,8 +66,11 @@ def f_right(f, q1, q2, p1, p2, p3, params):
     t     = params.current_time
     omega = 2. * np.pi * params.AC_freq
     vel_drift_x_out = params.vel_drift_x_out * np.sin(omega*t)
+    
+    p_x = mu * p1**0 * af.cos(p2)
+    p_y = mu * p2**0 * af.sin(p2)
 
-    fermi_dirac_out = (1./(af.exp( (E_upper - vel_drift_x_out*p1 - mu)/(k*T) ) + 1.)
+    fermi_dirac_out = (1./(af.exp( (E_upper - vel_drift_x_out*p_x - mu)/(k*T) ) + 1.)
                       )
     
     if (params.contact_geometry=="straight"):

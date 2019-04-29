@@ -32,14 +32,15 @@ solve_for_equilibrium = 0
 
 
 # File-writing Parameters:
-dump_steps = 10
+dump_steps = 5
+dump_dist_after = 1600
 
 # Time parameters:
 dt      = 0.025/2 # ps
-t_final = 200     # ps
+t_final = 200.     # ps
 
 # Dimensionality considered in velocity space:
-p_dim = 2
+p_dim = 1
 
 # Number of devices(GPUs/Accelerators) on each node:
 num_devices = 6
@@ -56,16 +57,17 @@ epsilon0           = 8.854187817 # x [aC^2 / (aJ um) ]
 epsilon_relative      = 3.9 # SiO2
 backgate_potential    = -10 # V
 global_chem_potential = 0.03
-contact_start         = 4.5 # um
-contact_end           = 5.5 # um
+contact_start         = 1.0 # um
+contact_end           = 1.5 # um
 contact_geometry      = "straight" # Contacts on either side of the device
                                    # For contacts on the same side, use 
                                    # contact_geometry = "turn_around"
 
-initial_temperature = 12e-4
+initial_temperature = 12e-5
 initial_mu          = 0.015
 vel_drift_x_in      = 1e-4*fermi_velocity
 vel_drift_x_out     = 1e-4*fermi_velocity
+DC_offset           = 2*vel_drift_x_in
 AC_freq             = 1./100 # ps^-1
 
 B3_mean = 1. # T
@@ -97,23 +99,45 @@ def tau_ee(q1, q2, p1, p2, p3):
 def tau(q1, q2, p1, p2, p3):
     return(tau_defect(q1, q2, p1, p2, p3))
 
-def band_energy(p_x, p_y):
-    
-    p = af.sqrt(p_x**2. + p_y**2.)
+#def band_energy(p_x, p_y):
+#    
+#    p = af.sqrt(p_x**2. + p_y**2.)
+#    
+#    E_upper = p*fermi_velocity
+#
+#    af.eval(E_upper)
+#    return(E_upper)
+
+def band_energy(p_r, p_theta):
+
+    p = initial_mu*p_r*p_theta**0
     
     E_upper = p*fermi_velocity
 
     af.eval(E_upper)
     return(E_upper)
 
-def band_velocity(p_x, p_y):
+#def band_velocity(p_x, p_y):
+#
+#    p     = af.sqrt(p_x**2. + p_y**2.)
+#    p_hat = [p_x / (p + 1e-20), p_y / (p + 1e-20)]
+#
+#    v_f   = fermi_velocity
+#
+#    upper_band_velocity =  [ v_f * p_hat[0],  v_f * p_hat[1]]
+#
+#    af.eval(upper_band_velocity[0], upper_band_velocity[1])
+#    return(upper_band_velocity)
 
-    p     = af.sqrt(p_x**2. + p_y**2.)
-    p_hat = [p_x / (p + 1e-20), p_y / (p + 1e-20)]
+def band_velocity(p_r, p_theta):
+
+    p_x_hat = af.cos(p_theta)
+    p_y_hat = af.sin(p_theta)
 
     v_f   = fermi_velocity
 
-    upper_band_velocity =  [ v_f * p_hat[0],  v_f * p_hat[1]]
+    upper_band_velocity =  [ v_f * p_x_hat,  v_f * p_y_hat]
+    #upper_band_velocity = [1. + 0.*p_r*p_theta, 0.*p_r*p_theta]
 
     af.eval(upper_band_velocity[0], upper_band_velocity[1])
     return(upper_band_velocity)
