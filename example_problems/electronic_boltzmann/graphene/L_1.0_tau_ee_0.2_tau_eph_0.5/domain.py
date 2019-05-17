@@ -16,7 +16,7 @@ N_q2     = 90
 
 p1_start = 0.5
 p1_end   = 1.5
-N_p1     =  1
+N_p1     = 10
 
 # If N_p2 > 1, mirror boundary conditions require p2 to be
 # symmetric about zero
