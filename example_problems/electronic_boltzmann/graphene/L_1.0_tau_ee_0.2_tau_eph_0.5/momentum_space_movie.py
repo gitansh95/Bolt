@@ -79,8 +79,11 @@ p2 = domain.p2_start + (0.5 + np.arange(N_p2)) * (domain.p2_end - domain.p2_star
 
 p2_meshgrid, p1_meshgrid = np.meshgrid(p2, p1)
 
+p_x = p1_meshgrid * np.cos(p2_meshgrid)
+p_y = p1_meshgrid * np.sin(p2_meshgrid)
+
 filepath = \
-'/home/mchandra/gitansh/bolt/example_problems/electronic_boltzmann/graphene/L_5.0_tau_ee_0.2_tau_eph_0.5/dumps'
+'/home/mchandra/gitansh/finite_T_polar/example_problems/electronic_boltzmann/graphene/L_1.0_tau_ee_0.2_tau_eph_0.5/dumps'
 moment_files 		        = np.sort(glob.glob(filepath+'/moment*.h5'))
 lagrange_multiplier_files   = \
         np.sort(glob.glob(filepath+'/lagrange_multipliers*.h5'))
@@ -95,8 +98,8 @@ h5f  = h5py.File(distribution_function_files[0], 'r')
 dist_func_background = h5f['distribution_function'][:]
 h5f.close()
 
-q1_position = 30
-q2_position = 90
+q1_position = 10
+q2_position = 20
 
 for file_number, dump_file in yt.parallel_objects(enumerate(distribution_function_files)):
     
@@ -110,8 +113,8 @@ for file_number, dump_file in yt.parallel_objects(enumerate(distribution_functio
     f_at_desired_q = np.reshape((dist_func - dist_func_background)[q2_position, q1_position, :],
                                 [N_p1, N_p2]
                                )
-    pl.contourf(p1_meshgrid, p2_meshgrid, f_at_desired_q, 100, cmap='bwr')
-    pl.title(r'Time = ' + "%.2f"%(time_array[file_number]) + " ps")
+    pl.contourf(p_x, p_y, f_at_desired_q, 100, cmap='bwr')
+    #pl.title(r'Time = ' + "%.2f"%(time_array[file_number]) + " ps")
     pl.xlabel('$p_x$')
     pl.ylabel('$p_y$')
     pl.gca().set_aspect('equal')

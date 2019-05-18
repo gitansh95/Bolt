@@ -110,7 +110,10 @@ def tau(q1, q2, p1, p2, p3):
 
 def band_energy(p_r, p_theta):
 
-    p = initial_mu*p_r*p_theta**0
+    p_x = p_r * af.cos(p_theta)
+    p_y = p_r * af.sin(p_theta)
+
+    p = af.sqrt(p_x**2. + p_y**2.)
     
     E_upper = p*fermi_velocity
 
