@@ -100,7 +100,7 @@ sensor_2_left_indices  = (q2 > sensor_2_left_start ) & (q2 < sensor_2_left_end)
 sensor_2_right_indices = (q2 > sensor_2_right_start) & (q2 < sensor_2_right_end)
 
 filepath = \
-'/home/mchandra/gitansh/gitansh_bolt/example_problems/electronic_boltzmann/graphene/L_1.0_tau_ee_0.2_tau_eph_0.5/dumps'
+'/home/mchandra/gitansh/finite_T_polar/example_problems/electronic_boltzmann/graphene/L_1.0_tau_ee_0.2_tau_eph_0.5/dumps'
 moment_files 		  = np.sort(glob.glob(filepath+'/moment*.h5'))
 lagrange_multiplier_files = \
         np.sort(glob.glob(filepath+'/lagrange_multipliers*.h5'))
