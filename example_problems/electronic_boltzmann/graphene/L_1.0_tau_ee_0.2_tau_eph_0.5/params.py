@@ -117,6 +117,7 @@ def band_energy(p_r, p_theta):
     
     E_upper = p*fermi_velocity
 
+    print (p_r.dims(), p_theta.dims(), p_x.dims(), p_y.dims())
     af.eval(E_upper)
     return(E_upper)
 
@@ -134,8 +135,8 @@ def band_energy(p_r, p_theta):
 
 def band_velocity(p_r, p_theta):
 
-    p_x_hat = af.cos(p_theta)
-    p_y_hat = af.sin(p_theta)
+    p_x_hat = p_r*af.cos(p_theta)
+    p_y_hat = p_r*af.sin(p_theta)
 
     v_f   = fermi_velocity
 
@@ -143,6 +144,7 @@ def band_velocity(p_r, p_theta):
     #upper_band_velocity = [1. + 0.*p_r*p_theta, 0.*p_r*p_theta]
 
     af.eval(upper_band_velocity[0], upper_band_velocity[1])
+
     return(upper_band_velocity)
 
 @af.broadcast

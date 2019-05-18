@@ -77,10 +77,12 @@ N_p2 = domain.N_p2
 p1 = domain.p1_start + (0.5 + np.arange(N_p1)) * (domain.p1_end - domain.p1_start)/N_p1
 p2 = domain.p2_start + (0.5 + np.arange(N_p2)) * (domain.p2_end - domain.p2_start)/N_p2
 
-p2_meshgrid, p1_meshgrid = np.meshgrid(p2, p1)
+p1_meshgrid, p2_meshgrid = np.meshgrid(p1, p2)
 
 p_x = p1_meshgrid * np.cos(p2_meshgrid)
 p_y = p1_meshgrid * np.sin(p2_meshgrid)
+
+print (p1_meshgrid.shape, p2_meshgrid.shape, p_x.shape, p_y.shape)
 
 filepath = \
 '/home/mchandra/gitansh/finite_T_polar/example_problems/electronic_boltzmann/graphene/L_1.0_tau_ee_0.2_tau_eph_0.5/dumps'
@@ -109,9 +111,11 @@ for file_number, dump_file in yt.parallel_objects(enumerate(distribution_functio
     dist_func = h5f['distribution_function'][:]
     h5f.close()
 
+    print (dist_func.shape)
 
-    f_at_desired_q = np.reshape((dist_func - dist_func_background)[q2_position, q1_position, :],
-                                [N_p1, N_p2]
+
+    f_at_desired_q = np.reshape((dist_func)[q2_position, q1_position, :],
+                                [N_p2, N_p1]
                                )
     pl.contourf(p_x, p_y, f_at_desired_q, 100, cmap='bwr')
     #pl.title(r'Time = ' + "%.2f"%(time_array[file_number]) + " ps")

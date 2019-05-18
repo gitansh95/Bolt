@@ -14,6 +14,7 @@ N_q2     = 45
 # Here, p1_start and p1_end have been adjusted such that
 # p_r_center is 1.0
 
+## TODO: REMOVE HARDCODED VALUES, FIGURE OUT HOW TO IMPORT LIBRARIES IN DOMAIN
 p1_start = 0.015 - 16.*12e-5
 p1_end   = 0.015 + 16.*12e-5
 N_p1     = 64
