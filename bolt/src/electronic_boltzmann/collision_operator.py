@@ -8,7 +8,7 @@ from .matrix_inverse import inverse_3x3_matrix
 import domain
 
 @af.broadcast
-def f0_defect_constant_T(f, p1, p2, p3, params):
+def f0_defect_constant_T(f, p_x, p_y, p_z, params):
 
     mu = params.mu
     T  = params.T
@@ -21,7 +21,7 @@ def f0_defect_constant_T(f, p1, p2, p3, params):
         tmp         = ((E_upper - mu)/(k*T))
         denominator = (k*T**2.*(af.exp(tmp) + 2. + af.exp(-tmp)) )
 
-        # TODO: Multiply with the integral measure dp1 * dp2
+        # TODO: Multiply with the integral measure dp_x * dp_y
         a00 = af.sum(T  / denominator, 0)
 
         fermi_dirac = 1./(af.exp( (E_upper - mu)/(k*T) ) + 1.)
@@ -73,12 +73,12 @@ def f0_defect_constant_T(f, p1, p2, p3, params):
     return(fermi_dirac)
 
 
-# Using af.broadcast, since p1, p2, p3 are of size (1, 1, Np1*Np2*Np3)
+# Using af.broadcast, since p_x, p_y, p_z are of size (1, 1, Np_x*Np_y*Np_z)
 # All moment quantities are of shape (Nq1, Nq2)
 # By wrapping with af.broadcast, we can perform batched operations
 # on arrays of different sizes.
 @af.broadcast
-def f0_defect(f, p1, p2, p3, params):
+def f0_defect(f, p_x, p_y, p_z, params):
 
     # Initial guess
     mu  = params.mu
@@ -92,7 +92,7 @@ def f0_defect(f, p1, p2, p3, params):
         tmp         = ((E_upper - mu)/(k*T))
         denominator = (k*T**2.*(af.exp(tmp) + 2. + af.exp(-tmp)) )
 
-        # TODO: Multiply with the integral measure dp1 * dp2
+        # TODO: Multiply with the integral measure dp_x * dp_y
         a00 = af.sum(T                      / denominator, 0)
         a01 = af.sum((E_upper - mu)         / denominator, 0)
         a10 = af.sum(E_upper*T              / denominator, 0)
@@ -166,7 +166,7 @@ def f0_defect(f, p1, p2, p3, params):
     return(fermi_dirac)
 
 @af.broadcast
-def f0_ee(f, p1, p2, p3, params):
+def f0_ee(f, p_x, p_y, p_z, params):
 
     # Initial guess
     mu_ee       = params.mu_ee
@@ -179,18 +179,18 @@ def f0_ee(f, p1, p2, p3, params):
         E_upper = params.E_band
         k       = params.boltzmann_constant
 
-        tmp1        = (E_upper - mu_ee - p1*vel_drift_x - p2*vel_drift_y)
+        tmp1        = (E_upper - mu_ee - p_x*vel_drift_x - p_y*vel_drift_y)
         tmp         = (tmp1/(k*T_ee))
         denominator = (k*T_ee**2.*(af.exp(tmp) + 2. + af.exp(-tmp)) )
 
         a_0 = T_ee      / denominator
         a_1 = tmp1      / denominator
-        a_2 = T_ee * p1 / denominator
-        a_3 = T_ee * p2 / denominator
+        a_2 = T_ee * p_x / denominator
+        a_3 = T_ee * p_y / denominator
 
         af.eval(a_0, a_1, a_2, a_3)
 
-        # TODO: Multiply with the integral measure dp1 * dp2
+        # TODO: Multiply with the integral measure dp_x * dp_y
         a_00 = af.sum(a_0, 0)
         a_01 = af.sum(a_1, 0)
         a_02 = af.sum(a_2, 0)
@@ -201,15 +201,15 @@ def f0_ee(f, p1, p2, p3, params):
         a_12 = af.sum(E_upper * a_2, 0)
         a_13 = af.sum(E_upper * a_3, 0)
 
-        a_20 = af.sum(p1 * a_0, 0)
-        a_21 = af.sum(p1 * a_1, 0)
-        a_22 = af.sum(p1 * a_2, 0)
-        a_23 = af.sum(p1 * a_3, 0)
+        a_20 = af.sum(p_x * a_0, 0)
+        a_21 = af.sum(p_x * a_1, 0)
+        a_22 = af.sum(p_x * a_2, 0)
+        a_23 = af.sum(p_x * a_3, 0)
 
-        a_30 = af.sum(p2 * a_0, 0)
-        a_31 = af.sum(p2 * a_1, 0)
-        a_32 = af.sum(p2 * a_2, 0)
-        a_33 = af.sum(p2 * a_3, 0)
+        a_30 = af.sum(p_y * a_0, 0)
+        a_31 = af.sum(p_y * a_1, 0)
+        a_32 = af.sum(p_y * a_2, 0)
+        a_33 = af.sum(p_y * a_3, 0)
 
         A = [ [a_00, a_01, a_02, a_03], \
               [a_10, a_11, a_12, a_13], \
@@ -218,7 +218,7 @@ def f0_ee(f, p1, p2, p3, params):
             ]
 
         fermi_dirac = 1./(af.exp( (  E_upper - mu_ee
-                                   - vel_drift_x*p1 - vel_drift_y*p2
+                                   - vel_drift_x*p_x - vel_drift_y*p_y
                                   )/(k*T_ee)
                                 ) + 1.
                          )
@@ -226,8 +226,8 @@ def f0_ee(f, p1, p2, p3, params):
 
         zeroth_moment  =         (f - fermi_dirac)
         second_moment  = E_upper*(f - fermi_dirac)
-        first_moment_x =      p1*(f - fermi_dirac)
-        first_moment_y =      p2*(f - fermi_dirac)
+        first_moment_x =      p_x*(f - fermi_dirac)
+        first_moment_y =      p_y*(f - fermi_dirac)
 
         eqn_mass_conservation   = af.sum(zeroth_moment,  0)
         eqn_energy_conservation = af.sum(second_moment,  0)
@@ -293,7 +293,7 @@ def f0_ee(f, p1, p2, p3, params):
     params.vel_drift_y = vel_drift_y
 
     fermi_dirac = 1./(af.exp( (  E_upper - mu_ee
-                               - vel_drift_x*p1 - vel_drift_y*p2
+                               - vel_drift_x*p_x - vel_drift_y*p_y
                               )/(k*T_ee)
                             ) + 1.
                      )
@@ -301,8 +301,8 @@ def f0_ee(f, p1, p2, p3, params):
 
     zeroth_moment  =          f - fermi_dirac
     second_moment  = E_upper*(f - fermi_dirac)
-    first_moment_x =      p1*(f - fermi_dirac)
-    first_moment_y =      p2*(f - fermi_dirac)
+    first_moment_x =      p_x*(f - fermi_dirac)
+    first_moment_y =      p_y*(f - fermi_dirac)
 
     eqn_mass_conservation   = af.sum(zeroth_moment,  0)
     eqn_energy_conservation = af.sum(second_moment,  0)
@@ -336,7 +336,7 @@ def f0_ee(f, p1, p2, p3, params):
     return(fermi_dirac)
 
 @af.broadcast
-def f0_ee_constant_T(f, p1, p2, p3, params):
+def f0_ee_constant_T(f, p_x, p_y, p_z, params):
 
     # Initial guess
     mu_ee       = params.mu_ee
@@ -349,19 +349,19 @@ def f0_ee_constant_T(f, p1, p2, p3, params):
         E_upper = params.E_band
         k       = params.boltzmann_constant
         
-        tmp1        = (E_upper - mu_ee - p1*vel_drift_x - p2*vel_drift_y)
+        tmp1        = (E_upper - mu_ee - p_x*vel_drift_x - p_y*vel_drift_y)
         tmp         = (tmp1/(k*T_ee))
         denominator = (k*T_ee**2.*(af.exp(tmp) + 2. + af.exp(-tmp)) )
         
         a_0 = T_ee      / denominator
         a_1 = tmp1      / denominator
-        a_2 = T_ee * p1 / denominator
-        a_3 = T_ee * p2 / denominator
+        a_2 = T_ee * p_x / denominator
+        a_3 = T_ee * p_y / denominator
 
         af.eval(a_0, a_1, a_2, a_3)
 
 
-        # TODO: Multiply with the integral measure dp1 * dp2
+        # TODO: Multiply with the integral measure dp_x * dp_y
         a_00 = af.sum(a_0, 0)
         #a_01 = af.sum(a_1, 0)
         a_02 = af.sum(a_2, 0)
@@ -372,15 +372,15 @@ def f0_ee_constant_T(f, p1, p2, p3, params):
         #a_12 = af.sum(E_upper * a_2, 0)
         #a_13 = af.sum(E_upper * a_3, 0)
 
-        a_20 = af.sum(p1 * a_0, 0)
-        #a_21 = af.sum(p1 * a_1, 0)
-        a_22 = af.sum(p1 * a_2, 0)
-        a_23 = af.sum(p1 * a_3, 0)
+        a_20 = af.sum(p_x * a_0, 0)
+        #a_21 = af.sum(p_x * a_1, 0)
+        a_22 = af.sum(p_x * a_2, 0)
+        a_23 = af.sum(p_x * a_3, 0)
 
-        a_30 = af.sum(p2 * a_0, 0)
-        #a_31 = af.sum(p2 * a_1, 0)
-        a_32 = af.sum(p2 * a_2, 0)
-        a_33 = af.sum(p2 * a_3, 0)
+        a_30 = af.sum(p_y * a_0, 0)
+        #a_31 = af.sum(p_y * a_1, 0)
+        a_32 = af.sum(p_y * a_2, 0)
+        a_33 = af.sum(p_y * a_3, 0)
 
         A = [ [a_00, a_02, a_03], \
               [a_20, a_22, a_23], \
@@ -389,7 +389,7 @@ def f0_ee_constant_T(f, p1, p2, p3, params):
         
         
         fermi_dirac = 1./(af.exp( (  E_upper - mu_ee
-                                   - vel_drift_x*p1 - vel_drift_y*p2 
+                                   - vel_drift_x*p_x - vel_drift_y*p_y 
                                   )/(k*T_ee) 
                                 ) + 1.
                          )
@@ -397,8 +397,8 @@ def f0_ee_constant_T(f, p1, p2, p3, params):
 
         zeroth_moment  =         (f - fermi_dirac)
         #second_moment  = E_upper*(f - fermi_dirac)
-        first_moment_x =      p1*(f - fermi_dirac)
-        first_moment_y =      p2*(f - fermi_dirac)
+        first_moment_x =      p_x*(f - fermi_dirac)
+        first_moment_y =      p_y*(f - fermi_dirac)
 
         eqn_mass_conservation   = af.sum(zeroth_moment,  0)
         #eqn_energy_conservation = af.sum(second_moment,  0)
@@ -462,7 +462,7 @@ def f0_ee_constant_T(f, p1, p2, p3, params):
     params.vel_drift_y = vel_drift_y
 
     fermi_dirac = 1./(af.exp( (  E_upper - mu_ee
-                               - vel_drift_x*p1 - vel_drift_y*p2 
+                               - vel_drift_x*p_x - vel_drift_y*p_y 
                               )/(k*T_ee) 
                             ) + 1.
                      )
@@ -470,8 +470,8 @@ def f0_ee_constant_T(f, p1, p2, p3, params):
 
     zeroth_moment  =          f - fermi_dirac
     #second_moment  = E_upper*(f - fermi_dirac)
-    first_moment_x =      p1*(f - fermi_dirac)
-    first_moment_y =      p2*(f - fermi_dirac)
+    first_moment_x =      p_x*(f - fermi_dirac)
+    first_moment_y =      p_y*(f - fermi_dirac)
     
     eqn_mass_conservation   = af.sum(zeroth_moment,  0)
     #eqn_energy_conservation = af.sum(second_moment,  0)
@@ -505,9 +505,9 @@ def f0_ee_constant_T(f, p1, p2, p3, params):
 def RTA(f, q1, q2, p1, p2, p3, moments, params, flag = False):
     """Return BGK operator -(f-f0)/tau."""
 
-    p_x = params.initial_mu * p1**0 * af.cos(p2)
-    p_y = params.initial_mu * p1**0 * af.sin(p2)
-    p_z = params.initial_mu * p3
+    p_x = p1 * af.cos(p2)
+    p_y = p1 * af.sin(p2)
+    p_z = p3
 
     if(af.any_true(params.tau_defect(q1, q2, p_x, p_y, p_z) == 0)):
         if (flag == False):
@@ -519,7 +519,7 @@ def RTA(f, q1, q2, p1, p2, p3, moments, params, flag = False):
 
     C_f = -(  f - f0_defect_constant_T(f, p_x, p_y, p_z, params) \
            ) / params.tau_defect(q1, q2, p_x, p_y, p_z) \
-          -(  f - f0_ee_constant_T(f, p_x, p_y, p_z, params)
+          -(  f - f0_ee(f, p_x, p_y, p_z, params)
            ) / params.tau_ee(q1, q2, p_x, p_y, p_z)
 
     # When (f - f0) is NaN. Dividing by np.inf doesn't give 0
