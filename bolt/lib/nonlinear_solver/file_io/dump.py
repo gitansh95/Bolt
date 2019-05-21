@@ -138,3 +138,46 @@ def dump_distribution_function(self, file_name):
     viewer(self._glob_f)
 
     return
+
+def dump_EM_fields(self, file_name):
+    """
+    This function is used to dump EM fields to a file which
+    can later be used for post-processing
+
+    Parameters
+    ----------
+
+    file_name : The EM_fields array will be dumped to this
+                provided file name.
+
+    Returns
+    -------
+
+    This function returns None. However it creates a file 'file_name.h5',
+    containing the data of the EM fields
+
+    Examples
+    --------
+    
+    >> solver.dump_EM_fields('fields')
+
+    The above statement will create a HDF5 file which contains the
+    fields. The data is always stored with the key 
+    'fields'
+
+    This can later be accessed using
+
+    >> import h5py
+    
+    >> h5f    = h5py.File('fields', 'r')
+    
+    >> fields = h5f['fields'][:]
+    
+    >> h5f.close()
+    """
+    N_g = self.N_ghost
+    
+    af.flat(self.cell_centered_EM_fields[:, N_g:-N_g, N_g:-N_g]).to_ndarray(self._glob_fields_array)
+    PETSc.Object.setName(self._glob_fields, 'fields')
+    viewer = PETSc.Viewer().createHDF5(file_name + '.h5', 'w', comm=self._comm)
+    viewer(self._glob_fields)

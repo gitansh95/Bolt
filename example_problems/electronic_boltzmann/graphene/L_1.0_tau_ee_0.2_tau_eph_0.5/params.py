@@ -8,6 +8,8 @@ import arrayfire as af
 fields_initialize = 'user-defined'
 
 # Can be defined as 'electrostatic' and 'fdtd'
+# To turn feedback from Electric fields on, set fields_solver = 'LCA'
+# and set charge_electron
 fields_type   = 'electrostatic'
 fields_solver = 'SNES'
 

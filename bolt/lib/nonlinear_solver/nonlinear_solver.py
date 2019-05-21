@@ -332,7 +332,7 @@ class nonlinear_solver(object):
             # If local zone includes the bottom physical boundary:
             if(i_q2_start == 0):
                 self.f[:, :, :N_g] = self.boundary_conditions.\
-                                     f_bot(self.f, self.q1_center, self.q2_center,
+                                     f_bottom(self.f, self.q1_center, self.q2_center,
                                            self.p1, self.p2, self.p3, 
                                            self.physical_system.params
                                           )[:, :, :N_g]
@@ -629,6 +629,7 @@ class nonlinear_solver(object):
     dump_distribution_function = dump.dump_distribution_function
     dump_moments               = dump.dump_moments
     dump_aux_arrays            = dump.dump_aux_arrays
+    dump_EM_fields             = dump.dump_EM_fields
 
     load_distribution_function = load.load_distribution_function
     print_performance_timings  = print_table

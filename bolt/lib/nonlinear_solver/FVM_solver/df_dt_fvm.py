@@ -1,4 +1,6 @@
 import arrayfire as af
+import h5py
+import os
 
 from bolt.lib.nonlinear_solver.EM_fields_solver.electrostatic import fft_poisson
 from bolt.lib.nonlinear_solver.EM_fields_solver.electrostatic import compute_electrostatic_fields
@@ -73,6 +75,9 @@ def df_dt_fvm(f, self, at_n = True):
                            self.compute_moments, 
                            self.physical_system.params, False
                           ) 
+    d_phi_dq1 = 0
+    d_phi_dq2 = 0
+    N_g = self.N_ghost
 
     if(    self.physical_system.params.solver_method_in_p == 'FVM' 
        and self.physical_system.params.charge_electron != 0
@@ -84,6 +89,46 @@ def df_dt_fvm(f, self, at_n = True):
                 if(self.physical_system.params.fields_solver == 'fft'):
 
                     fft_poisson(self, f)
+
+                elif(self.physical_system.params.fields_solver == 'LCA'):
+                    density = self.compute_moments ('density', f)
+                    density_plus_1_q1  = af.shift(density, 0, -1)
+                    density_minus_1_q1 = af.shift(density, 0, 1)
+                    density_plus_1_q2  = af.shift(density, 0, 0, -1)
+                    density_minus_1_q2 = af.shift(density, 0, 0, 1)
+
+                    
+                    dn_dq1 = (density_plus_1_q1 - \
+                            density_minus_1_q1)/(2*self.dq1)
+                    dn_dq2 = (density_plus_1_q2 - \
+                            density_minus_1_q2)/(2*self.dq2)
+
+                    d_phi_dq1 = params.charge_electron*dn_dq1/params.Cg
+                    d_phi_dq2 = params.charge_electron*dn_dq2/params.Cg
+                    
+                    E1 = -d_phi_dq1 #Using E_x = -dV_x/dx
+                    E2 = -d_phi_dq2 #Using E_y = -dV_y/dy
+
+                    af.eval(E1, E2)
+
+                    E1 = af.moddims(E1,
+                                    1,
+                                    self.N_q1_local + 2*N_g,
+                                    self.N_q2_local + 2*N_g
+                                   )
+
+                    E2 = af.moddims(E2,
+                                    1,
+                                    self.N_q1_local + 2*N_g,
+                                    self.N_q2_local + 2*N_g
+                                   )
+
+                    self.cell_centered_EM_fields[0, :] = E1
+                    self.cell_centered_EM_fields[1, :] = E2
+                    self.cell_centered_EM_fields[2, :] = 0. #TODO: Worry later
+
+                    pass
+
             
                 elif(self.physical_system.params.fields_solver == 'SNES'):
                     compute_electrostatic_fields(self)

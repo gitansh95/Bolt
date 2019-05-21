@@ -352,6 +352,9 @@ def RTA(f, q1, q2, p1, p2, p3, moments, params, flag = False):
     # When (f - f0) is NaN. Dividing by np.inf doesn't give 0
     # TODO: WORKAROUND
 
+    # Activate the following line to set collision operator to zero
+    #C_f = 0.*f
+
     af.eval(C_f)
     return(C_f)
 
