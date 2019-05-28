@@ -62,19 +62,6 @@ class physical_system(object):
                      coefficients.
 
         """
-        # Checking that domain resolution and size are 
-        # of the correct data-type(only of int or float):
-        
-        attributes = [a for a in dir(domain) if not a.startswith('__')]
-        
-        for i in range(len(attributes)):
-            if((isinstance(getattr(domain, attributes[i]), int) or
-                isinstance(getattr(domain, attributes[i]), float)
-               ) == 0
-              ):
-                raise TypeError('Expected attributes of domain \
-                                 to be of type int or float'
-                               )
 
         attributes = [a for a in dir(boundary_conditions) if not a.startswith('__')]
         
