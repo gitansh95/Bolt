@@ -17,9 +17,8 @@ N_q2     = 45
 # Here, p1_start and p1_end have been adjusted such that
 # p_r_center is 1.0
 
-## TODO: REMOVE HARDCODED VALUES, FIGURE OUT HOW TO IMPORT LIBRARIES IN DOMAIN
-p1_start = 0.015 - 16.*params.boltzmann_constant*params.initial_temperature
-p1_end   = 0.015 + 16.*params.boltzmann_constant*params.initial_temperature
+p1_start = params.initial_mu - 16.*params.boltzmann_constant*params.initial_temperature
+p1_end   = params.initial_mu + 16.*params.boltzmann_constant*params.initial_temperature
 N_p1     = 64
 
 # If N_p2 > 1, mirror boundary conditions require p2 to be
