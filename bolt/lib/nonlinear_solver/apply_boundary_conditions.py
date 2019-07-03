@@ -80,6 +80,65 @@ def apply_dirichlet_bcs_f(self, boundary):
 
     return
 
+def apply_internal_mirror_bcs_f(self):
+
+    # Left boundary 
+
+    N_g    = self.N_ghost
+    print ('N_g : ', N_g)
+    center = int(self.N_q1/2) 
+    print ('Center : ', center)
+
+    # x-0-x-0-x-0-|-0-x-0-x-0-x-....
+    #   0   1   2   3   4   5
+    # For mirror boundary conditions:
+    # 0 = 5; 1 = 4; 2 = 3;
+    print ('LHS = ', self.f[:, center-N_g:center].shape)
+    print ('RHS = ', af.flip(self.f[:, center-2*N_g:center-N_g], 1))
+    self.f[:, center-N_g:center] = af.flip(self.f[:, center-2*N_g:center-N_g], 1)
+
+    # For a particle moving with initial momentum at an angle \theta
+    # with the x-axis, a collision with the left boundary changes
+    # the angle of momentum after reflection to (pi - \theta)
+    N_theta = self.N_p2
+    tmp1 = self._convert_to_p_expanded(self.f)[:, :N_theta/2, :, :]
+    tmp1 = af.flip(tmp1, 1)
+    tmp2 = self._convert_to_p_expanded(self.f)[:, N_theta/2:, :, :]
+    tmp2 = af.flip(tmp2, 1)
+    tmp = af.join(1, tmp1, tmp2)
+
+    self.f[:, center-N_g:center] = \
+            self._convert_to_q_expanded(tmp)[:, center-N_g:center]
+
+    # Right boundary    
+        
+    # ...-x-0-x-0-x-0-|-0-x-0-x-0-x
+    #      -6  -5  -4  -3  -2  -1
+    # For mirror boundary conditions:
+    # -1 = -6; -2 = -5; -3 = -4;
+    self.f[:, center:center+N_g] = af.flip(self.f[:, center+N_g:center+2*N_g], 1)
+
+    # The points in the ghost zone need to have direction
+    # of velocity reversed as compared to the physical zones
+    # they are mirroring. To do this we flip the axis that
+    # contains the variation in p1
+
+
+    # For a particle moving with initial momentum at an angle \theta
+    # with the x-axis, a collision with the right boundary changes
+    # the angle of momentum after reflection to (pi - \theta)
+    N_theta = self.N_p2
+    tmp1 = self._convert_to_p_expanded(self.f)[:, :N_theta/2, :, :]
+    tmp1 = af.flip(tmp1, 1)
+    tmp2 = self._convert_to_p_expanded(self.f)[:, N_theta/2:, :, :]
+    tmp2 = af.flip(tmp2, 1)
+    tmp = af.join(1, tmp1, tmp2)
+
+    self.f[:, center:center+N_g] = \
+            self._convert_to_q_expanded(tmp)[:, center:center+N_g]
+
+    return
+
 def apply_mirror_bcs_f(self, boundary):
 
     N_g = self.N_ghost
@@ -187,6 +246,9 @@ def apply_mirror_bcs_f(self, boundary):
 def apply_bcs_f(self):
     if(self.performance_test_flag == True):
         tic = af.time()
+
+    if (self.physical_system.params.internal_bcs_enabled):
+        apply_internal_mirror_bcs_f(self)
 
     # Obtaining start coordinates for the local zone
     # Additionally, we also obtain the size of the local zone
