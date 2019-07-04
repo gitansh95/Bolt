@@ -85,16 +85,12 @@ def apply_internal_mirror_bcs_f(self):
     # Left boundary 
 
     N_g    = self.N_ghost
-    print ('N_g : ', N_g)
-    center = int(self.N_q1/2) 
-    print ('Center : ', center)
+    center = int(self.N_q1/2 + N_g) 
 
     # x-0-x-0-x-0-|-0-x-0-x-0-x-....
     #   0   1   2   3   4   5
     # For mirror boundary conditions:
     # 0 = 5; 1 = 4; 2 = 3;
-    print ('LHS = ', self.f[:, center-N_g:center].shape)
-    print ('RHS = ', af.flip(self.f[:, center-2*N_g:center-N_g], 1))
     self.f[:, center-N_g:center] = af.flip(self.f[:, center-2*N_g:center-N_g], 1)
 
     # For a particle moving with initial momentum at an angle \theta
