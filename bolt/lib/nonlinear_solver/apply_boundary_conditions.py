@@ -243,8 +243,6 @@ def apply_bcs_f(self):
     if(self.performance_test_flag == True):
         tic = af.time()
 
-    if (self.physical_system.params.internal_bcs_enabled):
-        apply_internal_mirror_bcs_f(self)
 
     # Obtaining start coordinates for the local zone
     # Additionally, we also obtain the size of the local zone
@@ -343,6 +341,12 @@ def apply_bcs_f(self):
 
         else:
             raise NotImplementedError('Unavailable/Invalid boundary condition')
+    
+    print ("apply_bc, i_q1_start/end/mirror : ", i_q1_start, i_q1_end,
+            self.internal_mirror_index)
+    if ((i_q1_start < self.internal_mirror_index) and (i_q1_end > self.internal_mirror_index)):
+        if (self.physical_system.params.internal_bcs_enabled):
+            apply_internal_mirror_bcs_f(self)
 
     af.eval(self.f)
 

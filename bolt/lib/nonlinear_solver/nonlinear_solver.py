@@ -114,6 +114,9 @@ class nonlinear_solver(object):
         # conditions that are utilized:
         N_g = self.N_ghost       = physical_system.N_ghost
         self.boundary_conditions = physical_system.boundary_conditions
+
+        # Internal mirror index
+        self.internal_mirror_index = int(self.N_q1/2 + N_g)
         
         # Declaring the communicator:
         self._comm = PETSc.COMM_WORLD.tompi4py()
