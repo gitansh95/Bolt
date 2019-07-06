@@ -80,12 +80,12 @@ def apply_dirichlet_bcs_f(self, boundary):
 
     return
 
-def apply_internal_mirror_bcs_f(self):
+def apply_vertical_internal_mirror_bcs_f(self, q1_index):
 
     # Left boundary 
 
     N_g    = self.N_ghost
-    center = int(self.N_q1/2 + N_g) 
+    center = q1_index#int(self.N_q1/2 + N_g) 
 
     # x-0-x-0-x-0-|-0-x-0-x-0-x-....
     #   0   1   2   3   4   5
@@ -342,11 +342,16 @@ def apply_bcs_f(self):
         else:
             raise NotImplementedError('Unavailable/Invalid boundary condition')
     
-    print ("apply_bc, i_q1_start/end/mirror : ", i_q1_start, i_q1_end,
-            self.internal_mirror_index)
-    if ((i_q1_start < self.internal_mirror_index) and (i_q1_end > self.internal_mirror_index)):
+    if ((i_q1_start < self.physical_system.params.mirror_0_index) and \
+            (i_q1_end > self.physical_system.params.mirror_0_index)):
         if (self.physical_system.params.internal_bcs_enabled):
-            apply_internal_mirror_bcs_f(self)
+            apply_vertical_internal_mirror_bcs_f(self,
+                    self.physical_system.params.mirror_0_index)
+    if ((i_q1_start < self.physical_system.params.mirror_1_index) and \
+            (i_q1_end > self.physical_system.params.mirror_1_index)):
+        if (self.physical_system.params.internal_bcs_enabled):
+            apply_vertical_internal_mirror_bcs_f(self,
+                    self.physical_system.params.mirror_1_index)
 
     af.eval(self.f)
 
