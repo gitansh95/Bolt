@@ -80,7 +80,19 @@ def apply_dirichlet_bcs_f(self, boundary):
 
     return
 
-def apply_vertical_internal_mirror_bcs_f(self, q1_index):
+def apply_vertical_internal_mirror_bcs_f(self, q1_index, slit_start, slit_end):
+
+        
+    slit_indices = ((self.q2_center >= slit_start) & \
+                        (self.q2_center <= slit_end))
+
+    #print ('q2 ', self.q2_center.shape)
+    #print ('slit shape', slit_indices)
+    
+    slit_indices     = af.tile(slit_indices, self.N_p2)
+    slit_indices_inv = (1-slit_indices)
+
+    #print ('f shape', self.f.shape)
 
     # Left boundary 
 
@@ -91,7 +103,9 @@ def apply_vertical_internal_mirror_bcs_f(self, q1_index):
     #   0   1   2   3   4   5
     # For mirror boundary conditions:
     # 0 = 5; 1 = 4; 2 = 3;
-    self.f[:, center-N_g:center] = af.flip(self.f[:, center-2*N_g:center-N_g], 1)
+    self.f[:, center-N_g:center] = \
+            slit_indices_inv[:, center-N_g:center]*af.flip(self.f[:, center-2*N_g:center-N_g], 1) + \
+            slit_indices[:, center-N_g:center]*self.f[:, center-N_g:center]
 
     # For a particle moving with initial momentum at an angle \theta
     # with the x-axis, a collision with the left boundary changes
@@ -104,7 +118,8 @@ def apply_vertical_internal_mirror_bcs_f(self, q1_index):
     tmp = af.join(1, tmp1, tmp2)
 
     self.f[:, center-N_g:center] = \
-            self._convert_to_q_expanded(tmp)[:, center-N_g:center]
+            slit_indices_inv[:, center-N_g:center]*self._convert_to_q_expanded(tmp)[:, center-N_g:center] + \
+            slit_indices[:, center-N_g:center]*self.f[:, center-N_g:center]
 
     # Right boundary    
         
@@ -112,7 +127,9 @@ def apply_vertical_internal_mirror_bcs_f(self, q1_index):
     #      -6  -5  -4  -3  -2  -1
     # For mirror boundary conditions:
     # -1 = -6; -2 = -5; -3 = -4;
-    self.f[:, center:center+N_g] = af.flip(self.f[:, center+N_g:center+2*N_g], 1)
+    self.f[:, center:center+N_g] = \
+            slit_indices_inv[:, center:center+N_g]*af.flip(self.f[:, center+N_g:center+2*N_g], 1) + \
+            slit_indices[:, center:center+N_g]*self.f[:, center:center+N_g]
 
     # The points in the ghost zone need to have direction
     # of velocity reversed as compared to the physical zones
@@ -131,7 +148,8 @@ def apply_vertical_internal_mirror_bcs_f(self, q1_index):
     tmp = af.join(1, tmp1, tmp2)
 
     self.f[:, center:center+N_g] = \
-            self._convert_to_q_expanded(tmp)[:, center:center+N_g]
+            slit_indices_inv[:, center:center+N_g]*self._convert_to_q_expanded(tmp)[:, center:center+N_g] + \
+            slit_indices[:, center:center+N_g]*self.f[:, center:center+N_g] 
 
     return
 
@@ -341,17 +359,17 @@ def apply_bcs_f(self):
 
         else:
             raise NotImplementedError('Unavailable/Invalid boundary condition')
-    
+   
     if ((i_q1_start < self.physical_system.params.mirror_0_index) and \
             (i_q1_end > self.physical_system.params.mirror_0_index)):
         if (self.physical_system.params.internal_bcs_enabled):
             apply_vertical_internal_mirror_bcs_f(self,
-                    self.physical_system.params.mirror_0_index)
-    if ((i_q1_start < self.physical_system.params.mirror_1_index) and \
-            (i_q1_end > self.physical_system.params.mirror_1_index)):
-        if (self.physical_system.params.internal_bcs_enabled):
-            apply_vertical_internal_mirror_bcs_f(self,
-                    self.physical_system.params.mirror_1_index)
+                    self.physical_system.params.mirror_0_index, 2.25, 2.75)
+    #if ((i_q1_start < self.physical_system.params.mirror_1_index) and \
+    #        (i_q1_end > self.physical_system.params.mirror_1_index)):
+    #    if (self.physical_system.params.internal_bcs_enabled):
+    #        apply_vertical_internal_mirror_bcs_f(self,
+    #                self.physical_system.params.mirror_1_index, 7.0, 8.0)
 
     af.eval(self.f)
 
