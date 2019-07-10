@@ -10,7 +10,7 @@ def apply_dirichlet_bcs_f(self, boundary):
     if(self._A_q1.elements() == self.N_p1 * self.N_p2 * self.N_p3):
         # A_q1 is of shape (Np1 * Np2 * Np3)
         # We tile to get it to form (Np1 * Np2 * Np3, Nq1, Nq2)
-        A_q1 = af.tile(self._A_q1, 1,
+        A_q1 = (1-2*af.sign(self.f)) * af.tile(self._A_q1, 1,
                        self.f.shape[1],
                        self.f.shape[2]
                       )
@@ -18,7 +18,7 @@ def apply_dirichlet_bcs_f(self, boundary):
     if(self._A_q2.elements() == self.N_p1 * self.N_p2 * self.N_p3):
         # _A_q2 is of shape (Np1 * Np2 * Np3)
         # We tile to get it to form (Np1 * Np2 * Np3, Nq1, Nq2)
-        A_q2 = af.tile(self._A_q2, 1,
+        A_q2 = (1-2*af.sign(self.f)) * af.tile(self._A_q2, 1,
                        self.f.shape[1],
                        self.f.shape[2]
                       )
@@ -80,15 +80,71 @@ def apply_dirichlet_bcs_f(self, boundary):
 
     return
 
-def apply_vertical_internal_mirror_bcs_f(self, q1_index, slit_start, slit_end):
+def apply_horizontal_internal_mirror_bcs_f(self, q2_index,
+                                           mirror_start, mirror_end
+                                          ):
+    mirror_indices = ((self.q2_center >= mirror_start) & \
+                        (self.q2_center <= mirror_end))
 
-        
-    slit_indices = ((self.q2_center >= slit_start) & \
-                        (self.q2_center <= slit_end))
-
-    #print ('q2 ', self.q2_center.shape)
-    #print ('slit shape', slit_indices)
     
+    #TODO : Use broadcast instead of tile
+    mirror_indices     = af.tile(mirror_indices, self.N_p2)
+    mirror_indices_inv = (1-mirror_indices)
+
+    #print ('f shape', self.f.shape)
+
+    # Left boundary 
+
+    N_g    = self.N_ghost
+    center = q2_index#int(self.N_q2/2 + N_g) 
+        
+    # x-0-x-0-x-0-|-0-x-0-x-0-x-....
+    #   0   1   2   3   4   5
+    # For mirror boundary conditions:
+    # 0 = 5; 1 = 4; 2 = 3;
+    self.f[:, :, center-N_g:center] = af.flip(self.f[:, :, center:center+N_g], 2)
+
+    # The points in the ghost zone need to have direction
+    # of velocity reversed as compared to the physical zones
+    # they are mirroring. To do this we flip the axis that
+    # contains the variation in p2
+    self.f[:, :, center-N_g:center] = \
+        self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(self.f),
+                                            1
+                                           )
+                                           )[:, :, center-N_g:center]
+
+    # ...-x-0-x-0-x-0-|-0-x-0-x-0-x
+    #      -6  -5  -4  -3  -2  -1
+    # For mirror boundary conditions:
+    # -1 = -6; -2 = -5; -3 = -4;
+    self.f[:, :, center:center+N_g] = af.flip(self.f[:, :, center-N_g:center], 2)
+
+    # The points in the ghost zone need to have direction
+    # of velocity reversed as compared to the physical zones
+    # they are mirroring. To do this we flip the axis that
+    # contains the variation in p2
+    self.f[:, :, center:center+N_g] = \
+        self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(self.f),
+                                            1
+                                           )
+                                   )[:, :, center:center+N_g]
+
+    return
+
+def apply_vertical_internal_mirror_bcs_f(self, q1_index,
+                                         slit_1_start, slit_1_end,
+                                         slit_2_start, slit_2_end
+                                        ):
+    # TODO : Can the slits overlap?
+    slit_1_indices = ((self.q2_center >= slit_1_start) & \
+                        (self.q2_center <= slit_1_end))
+    slit_2_indices = ((self.q2_center >= slit_2_start) & \
+                        (self.q2_center <= slit_2_end))
+
+    
+    #TODO : Use broadcast instead of tile
+    slit_indices     = slit_1_indices | slit_2_indices
     slit_indices     = af.tile(slit_indices, self.N_p2)
     slit_indices_inv = (1-slit_indices)
 
@@ -360,16 +416,29 @@ def apply_bcs_f(self):
         else:
             raise NotImplementedError('Unavailable/Invalid boundary condition')
    
+    #TODO : Wahat if the mirror lies on the boundary? No ghost zones on one side
     if ((i_q1_start < self.physical_system.params.mirror_0_index) and \
             (i_q1_end > self.physical_system.params.mirror_0_index)):
-        if (self.physical_system.params.internal_bcs_enabled):
+        if (self.physical_system.params.vertical_internal_bcs_enabled):
             apply_vertical_internal_mirror_bcs_f(self,
-                    self.physical_system.params.mirror_0_index, 2.25, 2.75)
-    #if ((i_q1_start < self.physical_system.params.mirror_1_index) and \
-    #        (i_q1_end > self.physical_system.params.mirror_1_index)):
-    #    if (self.physical_system.params.internal_bcs_enabled):
-    #        apply_vertical_internal_mirror_bcs_f(self,
-    #                self.physical_system.params.mirror_1_index, 7.0, 8.0)
+                                                 self.physical_system.params.mirror_0_index,
+                                                 2.25, 2.75,
+                                                 2.25, 2.75)
+    if ((i_q1_start < self.physical_system.params.mirror_1_index) and \
+            (i_q1_end > self.physical_system.params.mirror_1_index)):
+        if (self.physical_system.params.vertical_internal_bcs_enabled):
+            apply_vertical_internal_mirror_bcs_f(self,
+                    self.physical_system.params.mirror_1_index,
+                                                 2.25, 2.75,
+                                                 2.25, 2.75)
+    
+    if ((i_q2_start < self.physical_system.params.horizontal_mirror_0_index) and \
+            (i_q2_end > self.physical_system.params.horizontal_mirror_0_index)):
+        #TODO : Check for a break in the mirror within the node's domain
+        if (self.physical_system.params.horizontal_internal_bcs_enabled):
+            apply_horizontal_internal_mirror_bcs_f(self,
+                                                 self.physical_system.params.horizontal_mirror_0_index,
+                                                 0.0, 5.0)
 
     af.eval(self.f)
 
