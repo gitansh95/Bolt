@@ -461,6 +461,7 @@ def f0_ee_constant_T(f, p1, p2, p3, params):
     params.vel_drift_x = vel_drift_x
     params.vel_drift_y = vel_drift_y
 
+
     fermi_dirac = 1./(af.exp( (  E_upper - mu_ee
                                - vel_drift_x*p1 - vel_drift_y*p2 
                               )/(k*T_ee) 
@@ -518,7 +519,7 @@ def RTA(f, q1, q2, p1, p2, p3, moments, params, flag = False):
         return(f)
 
     C_f = -(  f - f0_defect_constant_T(f, p_x, p_y, p_z, params) \
-           ) / params.tau_defect(q1, q2, p_x, p_y, p_z) \
+          ) / params.tau_defect(q1, q2, p_x, p_y, p_z) \
           -(  f - f0_ee_constant_T(f, p_x, p_y, p_z, params)
            ) / params.tau_ee(q1, q2, p_x, p_y, p_z)
 
@@ -530,6 +531,17 @@ def RTA(f, q1, q2, p1, p2, p3, moments, params, flag = False):
 
     # Activate the following line to test individial collition operators
     # C_f = f0_ee_constant_T(f, p_x, p_y, p_z, params)
+    
+    # TODO : Multiply by dp1*dp2 and the phase space degeneracy factor
+    # (4./(2.*np.pi*params.h_bar)**2.)
+
+    multiply = lambda a, b:a*b
+
+    print ('f : ',f.shape)
+    print ('p_x : ', p_x.shape)
+
+    params.j_x = af.sum(af.broadcast(multiply, f, p_x), 0)
+    params.j_y = af.sum(af.broadcast(multiply, f, p_y), 0)
 
     af.eval(C_f)
     return(C_f)
