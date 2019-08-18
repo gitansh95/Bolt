@@ -106,7 +106,7 @@ def tau_defect(q1, q2, p1, p2, p3):
 
 @af.broadcast
 def tau_ee(q1, q2, p1, p2, p3):
-    return(np.inf * q1**0 * p1**0)
+    return(0.2 * q1**0 * p1**0)
 
 def tau(q1, q2, p1, p2, p3):
     return(tau_defect(q1, q2, p1, p2, p3))

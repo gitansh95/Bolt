@@ -86,7 +86,7 @@ sensor_2_left_indices  = (q2 > sensor_2_left_start ) & (q2 < sensor_2_left_end)
 sensor_2_right_indices = (q2 > sensor_2_right_start) & (q2 < sensor_2_right_end)
 
 filepath = \
-'/home/mchandra/gitansh/gitansh_bolt/example_problems/electronic_boltzmann/L_0.500_1.250_tau_ee_inf_tau_eph_0.10/dumps'
+'/home/mchandra/gitansh/gitansh_bolt/example_problems/electronic_boltzmann/graphene/L_5.0_10.0_tau_ee_0.2_tau_eph_5.0/dumps'
 moment_files 		  = np.sort(glob.glob(filepath+'/moment*.h5'))
 lagrange_multiplier_files = \
         np.sort(glob.glob(filepath+'/lagrange_multipliers*.h5'))
@@ -150,7 +150,7 @@ for file_number, dump_file in yt.parallel_objects(enumerate(moment_files)):
     pl.xlabel(r'$x\;(\mu \mathrm{m})$')
     #pl.ylabel(r'$y\;(\mu \mathrm{m})$')
 
-    pl.suptitle('$\\tau_\mathrm{mc} = \infty$ ps, $\\tau_\mathrm{mr} = 0.10$ ps')
+    pl.suptitle('$\\tau_\mathrm{mc} = \infty$ ps, $\\tau_\mathrm{mr} = 5.0$ ps')
     pl.savefig('images/dump_' + '%06d'%file_number + '.png')
     pl.clf()
     

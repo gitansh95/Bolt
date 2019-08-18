@@ -1,10 +1,10 @@
 q1_start = 0.
-q1_end   = 0.5
-N_q1     = 18
+q1_end   = 5.
+N_q1     = 20
 
 q2_start = 0.
-q2_end   = 1.25
-N_q2     = 45
+q2_end   = 10.0
+N_q2     = 40
 
 # If N_p1 > 1, mirror boundary conditions require p1 to be
 # symmetric about zero
@@ -27,7 +27,7 @@ N_p1     =  1
 
 p2_start =  -3.14159265359
 p2_end   =  3.14159265359
-N_p2     =  8192
+N_p2     =  1024
 
 # If N_p3 > 1, mirror boundary conditions require p3 to be
 # symmetric about zero
