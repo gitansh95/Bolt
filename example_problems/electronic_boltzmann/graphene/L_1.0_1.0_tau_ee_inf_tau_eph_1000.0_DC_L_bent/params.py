@@ -8,7 +8,13 @@ vertical_internal_bcs_enabled   = True
 horizontal_internal_bcs_enabled = True
 
 horizontal_mirror_0_index = int (domain.N_q2/4) + 2*domain.N_ghost
-mirror_0_index            = int(3.*domain.N_q1/4)
+horizontal_mirror_0_start = 0.00
+horizontal_mirror_0_end   = 0.75
+
+vertical_mirror_0_index   = int(3.*domain.N_q1/4)
+vertical_mirror_0_start   = 0.25
+vertical_mirror_0_end     = 1.00
+
 #mirror_1_index           = int(3*domain.N_q1/4)
 
 # Can be defined as 'electrostatic', 'user-defined'.
