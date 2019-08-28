@@ -89,7 +89,8 @@ sensor_2_left_indices  = (q2 > sensor_2_left_start ) & (q2 < sensor_2_left_end)
 sensor_2_right_indices = (q2 > sensor_2_right_start) & (q2 < sensor_2_right_end)
 
 filepath = \
-'/root/bolt/Bolt/example_problems/electronic_boltzmann/graphene/L_1.0_1.0_tau_ee_inf_tau_eph_1000.0_DC_L_bent/dumps'
+'/home/mchandra/gitansh/zero_T_with_mirror/example_problems/electronic_boltzmann/graphene/L_1.0_1.0_tau_ee_inf_tau_eph_1000.0_DC_L_bent/dumps'
+#'/root/bolt/Bolt/example_problems/electronic_boltzmann/graphene/L_1.0_1.0_tau_ee_inf_tau_eph_1000.0_DC_L_bent/dumps'
 moment_files 		  = np.sort(glob.glob(filepath+'/moment*.h5'))
 lagrange_multiplier_files = \
         np.sort(glob.glob(filepath+'/lagrange_multipliers*.h5'))
@@ -101,9 +102,9 @@ N_g = domain.N_ghost
 
 time_array = np.loadtxt("dump_time_array.txt")
 
-for file_number, dump_file in yt.parallel_objects(enumerate(moment_files[::-1])):
+for file_number, dump_file in yt.parallel_objects(enumerate(moment_files[:])):
 
-    file_number = -1
+    #file_number = -1
     print("file number = ", file_number, "of ", moment_files.size)
 
     h5f  = h5py.File(dump_file, 'r')
@@ -151,8 +152,8 @@ for file_number, dump_file in yt.parallel_objects(enumerate(moment_files[::-1]))
     if (params.vertical_internal_bcs_enabled):
         pl.axvline(0.75, color = 'k', ls = '--')
         #pl.axvline(q1[params.mirror_0_index-domain.N_ghost], color = 'k', ls = '--')
-        pl.axvspan(xmin = q1[params.mirror_0_index]-2*N_g*dq1,
-               xmax = q1[params.mirror_0_index],
+        pl.axvspan(xmin = q1[params.vertical_mirror_0_index]-2*N_g*dq1,
+               xmax = q1[params.vertical_mirror_0_index],
                ymin = 0.25/domain.q1_end,
                ymax = 1.0/domain.q1_end,
                color='k', alpha = 0.5)

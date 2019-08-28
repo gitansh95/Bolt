@@ -422,8 +422,8 @@ def apply_bcs_f(self):
         else:
             raise NotImplementedError('Unavailable/Invalid boundary condition')
    
-    if ((i_q1_start < self.physical_system.params.mirror_0_index) and \
-            (i_q1_end > self.physical_system.params.mirror_0_index)):
+    if ((i_q1_start < self.physical_system.params.vertical_mirror_0_index) and \
+            (i_q1_end > self.physical_system.params.vertical_mirror_0_index)):
         if (self.physical_system.params.vertical_internal_bcs_enabled):
             apply_vertical_internal_mirror_bcs_f(self,
                     self.physical_system.params.vertical_mirror_0_index,
