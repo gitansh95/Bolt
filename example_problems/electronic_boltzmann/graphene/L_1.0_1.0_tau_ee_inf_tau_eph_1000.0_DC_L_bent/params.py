@@ -8,6 +8,10 @@ vertical_internal_bcs_enabled   = True
 horizontal_internal_bcs_enabled = True
 
 horizontal_mirror_0_index = int (domain.N_q2/4) + 2*domain.N_ghost
+# horizontal_mirror_0_index is the center for the mirror ghost zones
+# ghost zones are on both sides of the mirror center
+# So technically the mirror starts at center - N_g, hence the shift up by one
+# N_g. The other N_g shift is to compensate for the ghost zone in the bottom boundary
 horizontal_mirror_0_start = 0.00
 horizontal_mirror_0_end   = 0.75
 

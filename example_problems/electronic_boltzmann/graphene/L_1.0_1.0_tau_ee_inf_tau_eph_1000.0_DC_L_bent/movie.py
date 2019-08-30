@@ -25,10 +25,10 @@ pl.rcParams['figure.dpi']      = 100
 pl.rcParams['image.cmap']      = 'jet'
 pl.rcParams['lines.linewidth'] = 1.5
 pl.rcParams['font.family']     = 'serif'
-pl.rcParams['font.weight']     = 'bold'
-pl.rcParams['font.size']       = 25
+pl.rcParams['font.weight']     = 'normal'
+pl.rcParams['font.size']       = 20
 pl.rcParams['font.sans-serif'] = 'serif'
-pl.rcParams['text.usetex']     = True
+pl.rcParams['text.usetex']     = False
 pl.rcParams['axes.linewidth']  = 1.5
 pl.rcParams['axes.titlesize']  = 'medium'
 pl.rcParams['axes.labelsize']  = 'medium'
@@ -142,21 +142,43 @@ for file_number, dump_file in yt.parallel_objects(enumerate(moment_files[:])):
     pl.xlim([domain.q1_start, domain.q1_end])
     pl.ylim([domain.q2_start, domain.q2_end])
 
+    pl.gca().set_xticks(q1 - 0.5*dq1)
+    pl.gca().set_yticks(q2 - 0.5*dq2)
+
+    pl.grid('on')
+    pl.plot(q1_meshgrid, q2_meshgrid, marker='.', markersize = 2, color='k', linestyle='none')
+
     if (params.horizontal_internal_bcs_enabled):
+        mirror_indices = q1[((q1 >= params.horizontal_mirror_0_start) & \
+                            (q1 <= params.horizontal_mirror_0_end))]
+
+
         pl.axhline(0.25, color = 'k', ls = '--')
-        pl.axhspan(ymin = q2[params.horizontal_mirror_0_index-2*domain.N_ghost],
-               ymax = q2[params.horizontal_mirror_0_index],
-               xmin = 0./domain.q1_end,
-               xmax = 0.75/domain.q1_end,
-               color='k', alpha = 0.5)
+        pl.axhspan(ymin = q2[params.horizontal_mirror_0_index - 2*N_g] - dq2/2,
+                   ymax = q2[params.horizontal_mirror_0_index] - dq2/2,
+                   xmin = (mirror_indices[0]-dq1/2)/domain.q1_end,
+                   xmax = (mirror_indices[-1]+dq1/2)/domain.q1_end,
+                   color='k', alpha = 0.5)
+        
+        #print ("Horizontal : ", mirror_indices)
+        #print (q2[params.horizontal_mirror_0_index - 2*N_g])
+        #print (q2[params.horizontal_mirror_0_index])
+    
     if (params.vertical_internal_bcs_enabled):
+        mirror_indices = q2[((q2 >= params.vertical_mirror_0_start) & \
+                            (q2 <= params.vertical_mirror_0_end))]
+
         pl.axvline(0.75, color = 'k', ls = '--')
-        #pl.axvline(q1[params.mirror_0_index-domain.N_ghost], color = 'k', ls = '--')
-        pl.axvspan(xmin = q1[params.vertical_mirror_0_index]-2*N_g*dq1,
-               xmax = q1[params.vertical_mirror_0_index],
-               ymin = 0.25/domain.q1_end,
-               ymax = 1.0/domain.q1_end,
-               color='k', alpha = 0.5)
+        pl.axvspan(xmin = q1[params.vertical_mirror_0_index - 2*N_g] - dq1/2,
+                   xmax = q1[params.vertical_mirror_0_index] - dq1/2,
+                   ymin = (mirror_indices[0]-dq2/2)/domain.q2_end,
+                   ymax = (mirror_indices[-1]+dq2/2)/domain.q2_end,
+                   color='k', alpha = 0.5)
+        
+        #print ("Vertical : ", mirror_indices)
+        #print (q1[params.vertical_mirror_0_index - 2*N_g])
+        #print (q1[params.vertical_mirror_0_index])
+
     
     pl.gca().set_aspect('equal')
     pl.xlabel(r'$x\;(\mu \mathrm{m})$')
