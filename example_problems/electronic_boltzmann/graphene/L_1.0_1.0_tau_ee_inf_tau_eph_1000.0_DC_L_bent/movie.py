@@ -6,6 +6,8 @@ import h5py
 import matplotlib
 import matplotlib.gridspec as gridspec
 import matplotlib.patches as patches
+import matplotlib.colors as colors
+
 matplotlib.use('agg')
 import pylab as pl
 import yt
@@ -128,9 +130,12 @@ for file_number, dump_file in yt.parallel_objects(enumerate(moment_files[:])):
   
     print("density shape : ", density.shape)
     print("vel_y.shape = ", vel_drift_y.shape)
+
+    density = density - np.mean(density)
+    density_norm = np.max(np.abs(density))
    
     pl.subplot(1,2,1)
-    pl.contourf(q1_meshgrid, q2_meshgrid, density, 100, cmap='bwr')
+    pl.contourf(q1_meshgrid, q2_meshgrid, density/density_norm, 100, cmap='bwr')
     pl.title(r'Time = ' + "%.2f"%(time_array[file_number]) + " ps")
 
     pl.streamplot(q1, q2, 
@@ -145,8 +150,11 @@ for file_number, dump_file in yt.parallel_objects(enumerate(moment_files[:])):
     pl.gca().set_xticks(q1 - 0.5*dq1)
     pl.gca().set_yticks(q2 - 0.5*dq2)
 
-    pl.grid('on')
+    pl.grid(True)
     pl.plot(q1_meshgrid, q2_meshgrid, marker='.', markersize = 2, color='k', linestyle='none')
+
+    pl.gca().xaxis.set_ticklabels([])
+    pl.gca().yaxis.set_ticklabels([])
 
     if (params.horizontal_internal_bcs_enabled):
         mirror_indices = q1[((q1 >= params.horizontal_mirror_0_start) & \
@@ -160,9 +168,6 @@ for file_number, dump_file in yt.parallel_objects(enumerate(moment_files[:])):
                    xmax = (mirror_indices[-1]+dq1/2)/domain.q1_end,
                    color='k', alpha = 0.5)
         
-        #print ("Horizontal : ", mirror_indices)
-        #print (q2[params.horizontal_mirror_0_index - 2*N_g])
-        #print (q2[params.horizontal_mirror_0_index])
     
     if (params.vertical_internal_bcs_enabled):
         mirror_indices = q2[((q2 >= params.vertical_mirror_0_start) & \
@@ -175,17 +180,17 @@ for file_number, dump_file in yt.parallel_objects(enumerate(moment_files[:])):
                    ymax = (mirror_indices[-1]+dq2/2)/domain.q2_end,
                    color='k', alpha = 0.5)
         
-        #print ("Vertical : ", mirror_indices)
-        #print (q1[params.vertical_mirror_0_index - 2*N_g])
-        #print (q1[params.vertical_mirror_0_index])
 
     
     pl.gca().set_aspect('equal')
     pl.xlabel(r'$x\;(\mu \mathrm{m})$')
     pl.ylabel(r'$y\;(\mu \mathrm{m})$')
 
+    #print (np.max(np.abs(density)))
+
     pl.subplot(1,2,2)
-    pl.contourf(q1_meshgrid, q2_meshgrid, density, 100, cmap='bwr')
+    im = pl.contourf(q1_meshgrid, q2_meshgrid, density/density_norm, 100, cmap='bwr')
+    im.set_clim(vmin=-1.0, vmax=1.0)
     pl.title(r'Time = ' + "%.2f"%(time_array[file_number]) + " ps")
 
     pl.xlim([domain.q1_start, domain.q1_end])
@@ -195,7 +200,9 @@ for file_number, dump_file in yt.parallel_objects(enumerate(moment_files[:])):
     pl.xlabel(r'$x\;(\mu \mathrm{m})$')
     #pl.ylabel(r'$y\;(\mu \mathrm{m})$')
 
-    pl.suptitle('$\\tau_\mathrm{mc} = \infty$ ps, $\\tau_\mathrm{mr} = 5.0$ ps')
+    pl.colorbar(im)
+
+    pl.suptitle('$\\tau_\mathrm{mc} = \infty$ ps, $\\tau_\mathrm{mr} = 1000.0$ ps')
     pl.savefig('images/dump_' + '%06d'%file_number + '.png')
     pl.clf()
     
