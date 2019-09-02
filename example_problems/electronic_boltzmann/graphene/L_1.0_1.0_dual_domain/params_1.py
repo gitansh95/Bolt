@@ -6,7 +6,7 @@ import arrayfire as af
 vertical_internal_bcs_enabled   = False
 horizontal_internal_bcs_enabled = False
 
-#horizontal_mirror_0_index = int (domain_2.N_q2/4) + 2*domain_2.N_ghost
+horizontal_mirror_0_index = 0#int (domain_2.N_q2/4) + 2*domain_2.N_ghost
 # horizontal_mirror_0_index is the center for the mirror ghost zones
 # ghost zones are on both sides of the mirror center
 # So technically the mirror starts at center - N_g, hence the shift up by one
@@ -14,7 +14,7 @@ horizontal_internal_bcs_enabled = False
 #horizontal_mirror_0_start = 0.00
 #horizontal_mirror_0_end   = 0.75
 
-#vertical_mirror_0_index   = int(3.*domain_2.N_q1/4)
+vertical_mirror_0_index   = 0#int(3.*domain_2.N_q1/4)
 #vertical_mirror_0_start   = 0.25
 #vertical_mirror_0_end     = 1.00
 

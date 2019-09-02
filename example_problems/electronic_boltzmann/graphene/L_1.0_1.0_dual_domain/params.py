@@ -98,6 +98,8 @@ vel_drift_x = None
 vel_drift_y = None
 j_x         = None
 j_y         = None
+f_1         = None
+f_2         = None
 phi         = None # Electric potential in the plane of graphene sheet
 
 # Momentum quantities (will be initialized to shape = [p1*p2*p3] in initialize.py)

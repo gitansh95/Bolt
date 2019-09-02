@@ -1,9 +1,11 @@
 import numpy as np
 import arrayfire as af
+import params as params_common
+import domain as domain_common
 
 in_q1_left   = 'mirror'
 in_q1_right  = 'mirror+dirichlet'
-in_q2_bottom = 'mirror'
+in_q2_bottom = 'mirror+dirichlet'
 in_q2_top    = 'mirror'
 
 @af.broadcast
@@ -91,3 +93,22 @@ def f_right(f, q1, q2, p1, p2, p3, params):
 
     af.eval(f_right)
     return(f_right)
+
+@af.broadcast
+def f_bottom(f, q1, q2, p1, p2, p3, params):
+
+    N_g = domain_common.N_ghost
+
+    fermi_dirac_1 = params_common.f_1
+    print ("fermi_dirac_1 : ", fermi_dirac_1.shape)
+    print ('f _ 2 : ', f.shape)
+        
+    q1_index = f.shape[1] - 2*N_g
+
+
+    f_bottom = f
+    f_bottom[:, N_g:-N_g, :N_g] = fermi_dirac_1[:, -(q1_index+N_g):-N_g, -2*N_g:-N_g]
+
+    print ('boundary_conditions.py : ', f_bottom.shape)
+    af.eval(f_bottom)
+    return(f_bottom)

@@ -13,6 +13,9 @@ from bolt.lib.nonlinear_solver.nonlinear_solver \
 from bolt.lib.nonlinear_solver.EM_fields_solver.electrostatic \
     import compute_electrostatic_fields
 
+# Common params
+import params
+
 # Horizontal
 import domain_1
 import boundary_conditions_1
@@ -80,6 +83,9 @@ params_1.rank = nls_1._comm.rank
 nls_2 = nonlinear_solver(system_2)
 params_2.rank = nls_2._comm.rank
 
+params.f_1 = nls_1.f
+params.f_2 = nls_2.f
+
 if (params_1.restart):
     nls_1.load_distribution_function(params_1_.restart_file)
 if (params_2.restart):
@@ -118,6 +124,11 @@ while t0_1 < t_final_1:
 
     dump_steps_1 = params_1.dump_steps
     dump_steps_2 = params_2.dump_steps
+    
+    # Store distribution functions in common params for coupling devices
+    params.f_1 = nls_1.f
+    params.f_2 = nls_2.f
+    
     # Uncomment if need to dump more frequently during a desired time interval
     #if (params.current_time > 149. and params.current_time < 154):
     #    dump_steps = 1

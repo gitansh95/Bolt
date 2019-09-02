@@ -1,10 +1,12 @@
 import numpy as np
 import arrayfire as af
+import params as params_common
+import domain as domain_common
 
 in_q1_left   = 'mirror+dirichlet'
 in_q1_right  = 'mirror'
 in_q2_bottom = 'mirror'
-in_q2_top    = 'mirror'
+in_q2_top    = 'mirror+dirichlet'
 
 @af.broadcast
 def f_left(f, q1, q2, p1, p2, p3, params):
@@ -27,7 +29,7 @@ def f_left(f, q1, q2, p1, p2, p3, params):
     if (params.contact_geometry=="straight"):
         # Contacts on either side of the device
 
-        q2_contact_start = 0.0#params.contact_start
+        q2_contact_start = 0.0 #params.contact_start
         q2_contact_end   = 0.25#params.contact_end
         
         cond = ((q2 >= q2_contact_start) & \
@@ -50,6 +52,7 @@ def f_left(f, q1, q2, p1, p2, p3, params):
     
         f_left =  cond_in*fermi_dirac_in + cond_out*fermi_dirac_out \
                 + (1 - cond_in)*(1 - cond_out)*f
+                
 
     af.eval(f_left)
     return(f_left)
@@ -91,3 +94,28 @@ def f_right(f, q1, q2, p1, p2, p3, params):
 
     af.eval(f_right)
     return(f_right)
+
+@af.broadcast
+def f_top(f, q1, q2, p1, p2, p3, params):
+
+    
+    q1_contact_start = 0.75#params.contact_start
+    q1_contact_end   = 1.0#params.contact_end
+
+    N_g = domain_common.N_ghost
+
+    fermi_dirac_2 = params_common.f_2
+    print ("fermi_dirac_2 : ", fermi_dirac_2.shape)
+        
+    cond = ((q1 >= q1_contact_start) & \
+            (q1 <= q1_contact_end) \
+           )
+    
+    q1_index = fermi_dirac_2.shape[1]-2*N_g
+
+    f_top = f
+    f_top[:, -(q1_index+N_g):-N_g, -N_g:] = fermi_dirac_2[:, N_g:-N_g, N_g:2*N_g]
+
+    print ('boundary_conditions.py : ', f_top.shape)
+    af.eval(f_top)
+    return(f_top)
