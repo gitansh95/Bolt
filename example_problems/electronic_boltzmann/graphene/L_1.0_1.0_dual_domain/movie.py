@@ -56,6 +56,18 @@ pl.rcParams['ytick.color']      = 'k'
 pl.rcParams['ytick.labelsize']  = 'medium'
 pl.rcParams['ytick.direction']  = 'in'
 
+class MidpointNormalize (colors.Normalize):
+    def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
+        self.midpoint = midpoint
+        colors.Normalize.__init__(self, vmin, vmax, clip)
+
+    def __call__(self, value, clip=None):
+    # I'm ignoring masked values and all kinds of edge cases to make
+    # a simple example...
+        x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
+        return np.ma.masked_array(np.interp(value, x, y), np.isnan(value))
+
+
 filepath = \
 '/home/mchandra/gitansh/zero_T_with_mirror/example_problems/electronic_boltzmann/graphene/L_1.0_1.0_dual_domain/dumps'
 #'/root/bolt/Bolt/example_problems/electronic_boltzmann/graphene/L_1.0_1.0_tau_ee_inf_tau_eph_1000.0_DC_L_bent/dumps'
@@ -117,9 +129,11 @@ dump_interval = params_1.dump_steps
 
 N_g = domain_1.N_ghost
 
+mean_density = 0
 time_array = np.loadtxt("dump_time_array.txt")
 
-for file_number, dump_file in yt.parallel_objects(enumerate(moment_files_1[:])):
+for file_number, dump_file in yt.parallel_objects(enumerate(moment_files_1[:1])):
+#for file_number in range(1):
 
     #file_number = -1
     print("file number = ", file_number, "of ", moment_files_1.size)
@@ -190,11 +204,90 @@ for file_number, dump_file in yt.parallel_objects(enumerate(moment_files_1[:])):
             -vel_drift_x_2.shape[1]:] = \
             vel_drift_y_2
 
-    mean_density_1 = np.mean(combined_density_array[:density_1.shape[0], :density_1.shape[1]])
-    mean_density_2 = np.mean((combined_density_array[-density_2.shape[0]:,
-        density_1.shape[1]:density_1.shape[1]+density_2.shape[1]]))
-    mean_density = (mean_density_1 + mean_density_2)/2
+    if (file_number == 0):
+        mean_density_1 = np.mean(combined_density_array[:density_1.shape[0], :density_1.shape[1]])
+        mean_density_2 = np.mean((combined_density_array[-density_2.shape[0]:,
+            density_1.shape[1]:density_1.shape[1]+density_2.shape[1]]))
+        mean_density = (mean_density_1 + mean_density_2)/2
 
+for file_number, dump_file in yt.parallel_objects(enumerate(moment_files_1[::-1])):
+#for file_number in range(1):
+
+    file_number = -1
+    print("file number = ", file_number, "of ", moment_files_1.size)
+
+    h5f  = h5py.File(moment_files_1[file_number], 'r')
+    moments_1 = np.swapaxes(h5f['moments'][:], 0, 1)
+    h5f.close()
+
+    density_1 = moments_1[:, :, 0]
+    j_x_1     = moments_1[:, :, 1]
+    j_y_1     = moments_1[:, :, 2]
+
+    h5f  = h5py.File(lagrange_multiplier_files_1[file_number], 'r')
+    lagrange_multipliers_1 = h5f['lagrange_multipliers'][:]
+    h5f.close()
+
+    mu_1    = lagrange_multipliers_1[:, :, 0]
+    mu_ee_1 = lagrange_multipliers_1[:, :, 1]
+    T_ee_1  = lagrange_multipliers_1[:, :, 2]
+    vel_drift_x_1 = lagrange_multipliers_1[:, :, 3]
+    vel_drift_y_1 = lagrange_multipliers_1[:, :, 4]
+  
+    h5f  = h5py.File(moment_files_2[file_number], 'r')
+    moments_2 = np.swapaxes(h5f['moments'][:], 0, 1)
+    h5f.close()
+
+    density_2 = moments_2[:, :, 0]
+    j_x_2     = moments_2[:, :, 1]
+    j_y_2     = moments_2[:, :, 2]
+
+    h5f  = h5py.File(lagrange_multiplier_files_2[file_number], 'r')
+    lagrange_multipliers_2 = h5f['lagrange_multipliers'][:]
+    h5f.close()
+
+    mu_2    = lagrange_multipliers_2[:, :, 0]
+    mu_ee_2 = lagrange_multipliers_2[:, :, 1]
+    T_ee_2  = lagrange_multipliers_2[:, :, 2]
+    vel_drift_x_2 = lagrange_multipliers_2[:, :, 3]
+    vel_drift_y_2 = lagrange_multipliers_2[:, :, 4]
+    
+    
+    #print ("density_1 : ", vel_drift_x_1.shape)
+    #print ("density_2 : ", vel_drift_x_2.shape)
+    shape_x = density_1.shape[0]
+    shape_y = density_1.shape[1] + density_2.shape[1]
+    combined_density_array = np.zeros((shape_x, shape_y))
+    combined_vel_drift_x_array = np.zeros((shape_y, shape_x))
+    combined_vel_drift_y_array = np.zeros((shape_y, shape_x))
+
+    print ("combined array : ", combined_density_array.shape)
+    print ("vel x1 : ", density_1.shape)
+    print ("vel x2 : ", density_2.shape)
+
+    combined_density_array[:density_1.shape[0], :density_1.shape[1]] = density_1
+
+    combined_density_array[-density_2.shape[0]:,
+            density_1.shape[1]:density_1.shape[1] + density_2.shape[1]] = density_2
+
+    combined_vel_drift_x_array[:vel_drift_x_1.shape[0], :vel_drift_x_1.shape[1]] = \
+            vel_drift_x_1
+    combined_vel_drift_x_array[vel_drift_x_1.shape[0]:vel_drift_x_1.shape[0] + vel_drift_x_2.shape[0]:, 
+            -vel_drift_x_2.shape[1]:] = \
+            vel_drift_x_2
+
+    combined_vel_drift_y_array[:vel_drift_x_1.shape[0], :vel_drift_x_1.shape[1]] = \
+            vel_drift_y_1
+    combined_vel_drift_y_array[vel_drift_x_1.shape[0]:vel_drift_x_1.shape[0] + vel_drift_x_2.shape[0]:, 
+            -vel_drift_x_2.shape[1]:] = \
+            vel_drift_y_2
+
+    if (file_number == 0):
+        mean_density_1 = np.mean(combined_density_array[:density_1.shape[0], :density_1.shape[1]])
+        mean_density_2 = np.mean((combined_density_array[-density_2.shape[0]:,
+            density_1.shape[1]:density_1.shape[1]+density_2.shape[1]]))
+        mean_density = (mean_density_1 + mean_density_2)/2
+    print ("mean density : ", mean_density)
     combined_density_array[:density_1.shape[0], :density_1.shape[1]] = \
     combined_density_array[:density_1.shape[0], :density_1.shape[1]] - \
     mean_density
@@ -202,11 +295,15 @@ for file_number, dump_file in yt.parallel_objects(enumerate(moment_files_1[:])):
     combined_density_array[-density_2.shape[0]:, density_1.shape[1]:density_1.shape[1]+density_2.shape[1]] = \
     combined_density_array[-density_2.shape[0]:, density_1.shape[1]:density_1.shape[1]+density_2.shape[1]] - \
     mean_density
-
+    
+    norm = 1.#np.max(np.abs(combined_density_array))
+    density_min = np.min(combined_density_array)
+    density_max = np.max(combined_density_array)
 
     im = pl.contourf(q1_meshgrid, q2_meshgrid,
-            combined_density_array/np.max(np.abs(combined_density_array)), 100, cmap='bwr')
-    im.set_clim(vmin=-1.0, vmax=1.0)
+            combined_density_array, 100, 
+            norm = MidpointNormalize(midpoint = 0, vmin=density_min, vmax=density_max), cmap='bwr')
+    #im.set_clim(vmin=-1.0, vmax=1.0)
     pl.title(r'Time = ' + "%.2f"%(time_array[file_number]) + " ps")
 
     pl.streamplot(q1, q2, 
