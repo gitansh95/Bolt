@@ -156,7 +156,7 @@ time_array = np.loadtxt("dump_time_array.txt")
 
 mean_density = 0
 # Get mean at zeroth step
-for file_number, dump_file in yt.parallel_objects(enumerate(moment_files_1[:1])):
+for file_number, dump_file in enumerate(moment_files_1[:1]):
 
     #file_number = -1
     print("file number = ", file_number, "of ", moment_files_1.size)
@@ -259,9 +259,9 @@ for file_number, dump_file in yt.parallel_objects(enumerate(moment_files_1[:1]))
         mean_density_3 = np.mean(combined_density_array[q1_index+contact_width:, q2_index:q2_index+contact_width])
         mean_density = (mean_density_1 + mean_density_2 + mean_density_3)/3
 
-for file_number, dump_file in yt.parallel_objects(enumerate(moment_files_1[::-1])):
+for file_number, dump_file in yt.parallel_objects(enumerate(moment_files_1[:])):
 
-    file_number = -1
+    #file_number = -1
     print("file number = ", file_number, "of ", moment_files_1.size)
 
     h5f  = h5py.File(moment_files_1[file_number], 'r')
