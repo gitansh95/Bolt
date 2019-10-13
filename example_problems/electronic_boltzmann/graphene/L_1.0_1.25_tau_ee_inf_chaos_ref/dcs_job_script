@@ -1,0 +1,13 @@
+#!/bin/bash
+#SBATCH -o L_1x2.5.o%j
+#SBATCH -p dcs
+#SBATCH -t 06:00:00
+#SBATCH -N 1
+#SBATCH -n 1
+#SBATCH --gres=gpu:1
+#SBATCH -c 1
+
+export LD_LIBRARY_PATH=$HOME/scratch/lib64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/gpfs/u/home/NECD/NECDsdrs/scratch/arrayfire_latest/build/package/lib64:$LD_LIBRARY_PATH
+
+time mpirun $HOME/scratch/bin/python36 main.py
