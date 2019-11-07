@@ -1,11 +1,21 @@
-import numpy as np
 import scipy.fftpack
 import csv
-import pylab as pl
-from scipy.optimize import curve_fit
 from scipy.optimize import root
-from scipy.signal import correlate
 from scipy.interpolate import interp1d
+
+import arrayfire as af
+import numpy as np
+from scipy.signal import correlate
+from scipy.optimize import curve_fit
+import glob
+import h5py
+import matplotlib
+import matplotlib.gridspec as gridspec
+import matplotlib.patches as patches
+matplotlib.use('agg')
+import pylab as pl
+import yt
+yt.enable_parallelism()
 
 pl.rcParams['figure.figsize']  = 12, 7.5
 pl.rcParams['lines.linewidth'] = 1.5
@@ -41,8 +51,12 @@ def line (x, m, c):
 def sin_curve_fit(t, A, tau_in):
         return A*np.sin(2*np.pi*AC_freq*(t + tau_in ))
 
-lengths = np.arange(0.75, 0.751, 0.25)
-freq = np.arange(2.0, 100.0, 1.0)
+lengths = np.arange(1.0, 1.01, 0.25)
+
+freq_1 = np.arange(1.0, 49.91, 0.1)
+freq = np.arange(50.0, 120.1, 1.0)
+freq = np.append(freq_1, freq)
+
 AC_freq_array = freq/100.0
 
 phase_arrays = []
@@ -58,9 +72,11 @@ for l in lengths:
         AC_freq = index/100.0
         time_period = 1/AC_freq
 
-        time         = np.loadtxt("frequency_scaling/time_L_%.3f_%.3f_tau_ee_inf_tau_eph_5.0_freq_%.1f.txt"%(L1, L2, index))
-        edge_density = np.loadtxt("frequency_scaling/edge_density_L_%.3f_%.3f_tau_ee_inf_tau_eph_5.0_freq_%.1f.txt"%(L1, L2, index))
-        q2           = np.loadtxt("frequency_scaling/q2_edge_L_%.3f_%.3f_tau_ee_inf_tau_eph_5.0_freq_%.1f.txt"%(L1, L2, index))
+        time         = np.loadtxt("edge_data/time_L_%.3f_%.3f_tau_ee_inf_tau_eph_5.0_freq_%.1f.txt"%(L1, L2, index))
+        edge_density_left  = np.loadtxt("edge_data/edge_density_left_L_%.3f_%.3f_tau_ee_inf_tau_eph_5.0_freq_%.1f.txt"%(L1, L2, index))
+        edge_density_right = np.loadtxt("edge_data/edge_density_right_L_%.3f_%.3f_tau_ee_inf_tau_eph_5.0_freq_%.1f.txt"%(L1, L2, index))
+        edge_density = edge_density_left - edge_density_right
+        q2           = np.loadtxt("edge_data/q2_edge_L_%.3f_%.3f_tau_ee_inf_tau_eph_5.0_freq_%.1f.txt"%(L1, L2, index))
 
         #time         = np.loadtxt("frequency_scaling/time_L_%.3f_%.3f_tau_ee_inf_tau_eph_0.1_freq_%.1f.txt"%(L1, L2, index))
         #edge_density = np.loadtxt("frequency_scaling/edge_density_L_%.3f_%.3f_tau_ee_inf_tau_eph_0.1_freq_%.1f.txt"%(L1, L2, index))
@@ -72,7 +88,7 @@ for l in lengths:
 
         print (edge_density.shape)
 
-        half_time = time.shape[0]/2
+        half_time = int(time.shape[0]/2)
         N_spatial = edge_density.shape[1]\
 
         drive = np.sin(2*np.pi*AC_freq*time)
@@ -141,7 +157,7 @@ for l in lengths:
         pl.axhline(0, color = 'k', ls = '--')
 
         # Plot
-        pl.ylabel('$\mathrm{\phi}$')
+        #pl.ylabel('$\mathrm{\phi}$')
         pl.xlabel('$\mathrm{y\ \mu m}$')
 
         #pl.title('$1.0 \\times 2.5,\ \\tau_\mathrm{mr} = 5.0,\ \\tau_ \mathrm{mc} = \infty}$')
@@ -248,7 +264,7 @@ for i in range(lengths.size):
                 flag = True
 
     pl.plot(AC_freq_array, phase_arrays[i, :], '-o', label = "L = %.3f"%(lengths[i]), alpha = 0.5)
-    np.savetxt('images/phase_vs_freq_L_%.3f_%.3f.txt'%(lengths[i], 2.5*lengths[i]), phase_arrays[i, :])
+    np.savetxt('phase_vs_freq_data/phase_vs_freq_L_%.3f_%.3f.txt'%(lengths[i], 2.5*lengths[i]), phase_arrays[i, :])
     #pl.plot(AC_freq_array, phase_vs_freq_array_2, '-o', label = "$\mathrm{Top\ Edge}$", color = 'cyan', alpha = 0.5)
 
 pl.axhline(0, color = 'k', ls = '--')
