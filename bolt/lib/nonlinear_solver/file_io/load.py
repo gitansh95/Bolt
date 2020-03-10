@@ -24,7 +24,7 @@ def load_distribution_function(self, file_name):
     The above statemant will load the distribution function data stored in the file
     distribution_function.h5 into self.f
     """
-    viewer = PETSc.Viewer().createHDF5(file_name, 
+    viewer = PETSc.Viewer().createBinary(file_name + '.bin', 
                                        PETSc.Viewer.Mode.READ, 
                                        comm=self._comm
                                       )
