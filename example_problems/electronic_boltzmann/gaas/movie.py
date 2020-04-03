@@ -8,6 +8,7 @@ import matplotlib
 import matplotlib.gridspec as gridspec
 import matplotlib.patches as patches
 matplotlib.use('agg')
+from matplotlib import transforms, colors
 import pylab as pl
 import yt
 yt.enable_parallelism()
@@ -20,6 +21,17 @@ import domain
 import boundary_conditions
 import params
 import initialize
+
+class MidpointNormalize (colors.Normalize):
+    def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
+        self.midpoint = midpoint
+        colors.Normalize.__init__(self, vmin, vmax, clip)
+
+    def __call__(self, value, clip=None):
+    # I'm ignoring masked values and all kinds of edge cases to make
+    # a simple example...
+        x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
+        return np.ma.masked_array(np.interp(value, x, y), np.isnan(value))
 
 
 # Optimized plot parameters to make beautiful plots:
@@ -100,16 +112,16 @@ sensor_2_right_indices = (q2 > sensor_2_right_start) & (q2 < sensor_2_right_end)
 
 #filepath = \
 #'/home/mchandra/gitansh/bolt_master/example_problems/electronic_boltzmann/graphene/L_5.0_10.0_tau_ee_0.2_tau_eph_1.0/dumps'
-filepath = os.getcwd() + "/dumps"
-moment_files 		  = np.sort(glob.glob(filepath+'/moment*.bin'))
+filepath = os.getcwd()
+moment_files 		  = np.sort(glob.glob(filepath+'/dump_moments/*.bin'))
 lagrange_multiplier_files = \
-        np.sort(glob.glob(filepath+'/lagrange_multipliers*.bin'))
+        np.sort(glob.glob(filepath+'/dump_lagrange_multipliers/*.bin'))
 
 print ("moment files : ", moment_files.size)
 print ("lagrange multiplier files : ", lagrange_multiplier_files.size)
 
 dt = params.dt
-dump_interval = params.dump_steps
+#dump_interval = params.dump_steps
 
 time_array = np.loadtxt("dump_time_array.txt")
 
@@ -141,8 +153,13 @@ for file_number, dump_file in yt.parallel_objects(enumerate(moment_files)):
 
     print (vel_drift_x.shape)
     print (density.shape)
+
+    delta_n = density - np.mean(density)
+    density_min = np.min(delta_n)
+    density_max = np.max(delta_n)
     
-    pl.contourf(q1_meshgrid, q2_meshgrid, density.T, 100, cmap='bwr')
+    pl.contourf(q1_meshgrid, q2_meshgrid, delta_n.T, 100,
+        norm = MidpointNormalize(midpoint=0, vmin=density_min, vmax=density_max), cmap='bwr')
     pl.title(r'Time = ' + "%.2f"%(time_array[file_number]) + " ps")
     pl.streamplot(q1, q2, 
                   vel_drift_x, vel_drift_y,
