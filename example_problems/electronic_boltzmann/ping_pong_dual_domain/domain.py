@@ -35,7 +35,7 @@ p1_end   = [1.5*params.initial_mu]
 
 # If N_p2 > 1, mirror boundary conditions require p2 to be
 # symmetric about zero
-N_p2     =  32
+N_p2     =  8
 
 # In the cartesian representation of momentum space,
 # p2 = p_y (magnitude of momentum)

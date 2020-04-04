@@ -139,6 +139,7 @@ def f_top(f, t, q1, q2, p1, p2, p3, params):
 
     f_top = f
     print ("f top : ", f_top.shape)
+    # Top ghost zone is filled with f from the bottom of the other domain
     f_top[:, :, q1_connector_start_index:q1_connector_end_index, -N_g:] = fermi_dirac_2[:, :, N_g:-N_g, N_g:2*N_g]
     
     print ('boundary_conditions.py : ', f_top.shape)

@@ -138,7 +138,8 @@ def f_bottom(f, t, q1, q2, p1, p2, p3, params):
     print ("fermi_dirac_1 : ", fermi_dirac_1.shape)
 
     f_bottom = f
-    f_bottom[:, :, q1_connector_start_index:q1_connector_end_index, -N_g:] = fermi_dirac_1[:, :, N_g:-N_g, N_g:2*N_g]
+    # Bottom ghost zone is filled with f from the top of the other domain
+    f_bottom[:, :, q1_connector_start_index:q1_connector_end_index, 0:N_g] = fermi_dirac_1[:, :, N_g:-N_g, -2*N_g:-N_g]
 
     print ('boundary_conditions.py : ', f_bottom.shape)
     af.eval(f_bottom)

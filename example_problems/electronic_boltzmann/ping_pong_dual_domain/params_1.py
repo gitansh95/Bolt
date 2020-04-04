@@ -40,7 +40,7 @@ electrostatic_solver_every_nth_step = 1000000
 solve_for_equilibrium = 0
 
 # Time parameters:
-dt      = 0.025/2 # ps
+dt      = 0.025/4 # ps
 t_final = 10.     # ps
 
 

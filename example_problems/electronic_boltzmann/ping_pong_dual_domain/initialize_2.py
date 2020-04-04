@@ -56,10 +56,10 @@ def initialize_f(q1, q2, p1, p2, p3, params):
 
     # Parameters to define a gaussian in space (representing a 2D ball)
     A       = N_p2 # Amplitude (required for normalization)
-    sigma_x = 0.1 # Standard deviation in q1
-    sigma_y = 0.1 # Standard deviation in q2
+    sigma_x = 0.05 # Standard deviation in q1
+    sigma_y = 0.05 # Standard deviation in q2
     x_0     = 0.5 # Center in q1
-    y_0     = 0.5 # Center in q2
+    y_0     = 0.25 # Center in q2
 
     # TODO: This will work with polar2D coordinates only for the moment
     # Particles lying on the ball need to have the same velocity (direction)
