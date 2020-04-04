@@ -1,6 +1,8 @@
 import numpy as np
 import arrayfire as af
 
+import params
+
 instantaneous_collisions = False #TODO : Remove from lib
 hybrid_model_enabled     = False #TODO : Remove from lib
 source_enabled           = True
@@ -35,28 +37,25 @@ riemann_solver_in_p = 'upwind-flux'
 # Restart(Set to zero for no-restart):
 restart = 0
 restart_file = '/home/mani/work/quazar_research/bolt/example_problems/electronic_boltzmann/graphene/dumps/f_eqbm.h5'
-phi_restart_file = '/home/mani/work/quazar_research/bolt/example_problems/electronic_boltzmann/graphene/dumps/phi_eqbm.h5'
-electrostatic_solver_every_nth_step = 1000000
-solve_for_equilibrium = 0
 
 # Time parameters:
-dt      = 0.025/4 # ps
-t_final = 10.     # ps
+dt      = params.dt # ps
+t_final = params.t_final     # ps
 
 
 # Set to zero for no file-writing
-dt_dump_f       = 2*dt #ps
+dt_dump_f       = params.dt_dump_f #ps
 # ALWAYS set dump moments and dump fields at same frequency:
-dt_dump_moments = dt_dump_fields = 2*dt #ps
+dt_dump_moments = dt_dump_fields = params.dt_dump_fields #ps
 
 
 # Dimensionality considered in velocity space:
-p_dim = 1
-p_space_grid = 'polar2D' # Supports 'cartesian' or 'polar2D' grids
+p_dim = params.p_dim
+p_space_grid = params.p_space_grid # Supports 'cartesian' or 'polar2D' grids
 # Set p-space start and end points accordingly in domain.py
 
 # Number of devices(GPUs/Accelerators) on each node:
-num_devices = 6
+num_devices = params.num_devices
 
 # Constants:
 mass_particle      = 0.910938356 # x 1e-30 kg

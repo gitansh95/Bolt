@@ -1,6 +1,8 @@
 import numpy as np
 import params
 
+#TODO : Set physical domain in respective domain files
+
 N_ghost = 2
 
 # If N_p1 > 1, mirror boundary conditions require p1 to be
