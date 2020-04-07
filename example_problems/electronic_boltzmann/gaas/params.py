@@ -34,12 +34,12 @@ riemann_solver_in_p = 'upwind-flux'
 
 # Time parameters:
 dt      = 0.025/2 # ps
-t_final = 5.     # ps
+t_final = 100.     # ps
 
 # Set to zero for no file-writing
-dt_dump_f       = 5*dt #ps
+dt_dump_f       = 1000*dt #ps
 # ALWAYS set dump moments and dump fields at same frequency:
-dt_dump_moments = dt_dump_fields = 15*dt #ps
+dt_dump_moments = dt_dump_fields = 5*dt #ps
 
 # Dimensionality considered in velocity space:
 p_dim = 1

@@ -45,8 +45,8 @@ def f_left(f, t, q1, q2, p1, p2, p3, params):
     if (params.contact_geometry=="straight"):
         # Contacts on either side of the device
 
-        q2_contact_start = params.contact_start
-        q2_contact_end   = params.contact_end
+        q2_contact_start = contact_start
+        q2_contact_end   = contact_end
         
         cond = ((q2 >= q2_contact_start) & \
                 (q2 <= q2_contact_end) \
@@ -93,7 +93,7 @@ def f_bottom(f, t, q1, q2, p1, p2, p3, params):
     contact_start = 2.22 - contact_width/2
     contact_end   = 2.22 + contact_width/2 
     if (params.source_type == 'AC'):
-        vel_drift_y_out = params.vel_drift_x_out/contat_width * np.sin(omega*t)
+        vel_drift_y_out = params.vel_drift_x_out/contact_width * np.sin(omega*t)
     elif (params.source_type == 'DC'):
         vel_drift_y_out = params.vel_drift_x_out/contact_width
     else:
