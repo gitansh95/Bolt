@@ -19,13 +19,13 @@ def f_left(f, t, q1, q2, p1, p2, p3, params):
     omega = 2. * np.pi * params.AC_freq
     
     contact_start = 0.
-    contact_end   = 24. 
-    contact_width = contact_start - contact_end #TODO : Do not hardcode
+    contact_end   = 24.
+    contact_width = contact_end - contact_start #TODO : Do not hardcode
     
     if (params.source_type == 'AC'):
-        vel_drift_x_in  = params.vel_drift_x_in/contact_width  * np.sin(omega*t)
+        vel_drift_x_in  = -params.vel_drift_x_in/contact_width  * np.sin(omega*t)
     elif (params.source_type == 'DC'):
-        vel_drift_x_in  = params.vel_drift_x_in/contact_width
+        vel_drift_x_in  = -params.vel_drift_x_in/contact_width
     else:
         raise NotImplementedError('Unsupported source_type')
 

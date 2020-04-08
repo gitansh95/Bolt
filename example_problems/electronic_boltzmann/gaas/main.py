@@ -69,6 +69,7 @@ if(params.latest_restart == True):
     print(time_elapsed)
     if(latest_f is not None and  time_elapsed is not None):
       nls.load_distribution_function(latest_f)
+      dump_time_array = np.loadtxt("dump_time_array.txt").tolist()
       using_latest_restart = True
 
 

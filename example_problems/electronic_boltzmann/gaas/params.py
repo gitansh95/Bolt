@@ -34,7 +34,7 @@ riemann_solver_in_p = 'upwind-flux'
 
 # Time parameters:
 dt      = 0.025/2 # ps
-t_final = 100.     # ps
+t_final = 500.     # ps
 
 # Set to zero for no file-writing
 dt_dump_f       = 1000*dt #ps
