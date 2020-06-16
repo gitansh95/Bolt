@@ -151,7 +151,8 @@ def A_p(t, q1, q2, p1, p2, p3,
     params: The parameters file/object that is originally declared by the user.
             This can be used to inject other functions/attributes into the function
     """
-    e = params.charge_electron
+    # TODO : What happens in case of multple species?
+    e = params.charge[0]
     c = params.speed_of_light
     B3_mean = params.B3_mean
 
@@ -195,14 +196,18 @@ def C_p(t, q1, q2, p1, p2, p3,
     params: The parameters file/object that is originally declared by the user.
             This can be used to inject other functions/attributes into the function
     """
-    e = params.charge_electron
+
+    # TODO : What happens in case of multple species?
+    e = params.charge[0]
     c = params.speed_of_light
     B3_mean = params.B3_mean
 
     v1, v2 = params.vel_band
 
     dp1_dt = e*(E1 + v2*B3_mean/c) # p1 = hcross * k1
-    dp2_dt = e*(E2 - v1*B3_mean/c) # p2 = hcross * k2
-    dp3_dt = 0.*p1
+    #dp2_dt = e*(E2 - v1*B3_mean/c) # p2 = hcross * k2
+    # TODO : Manually setting coefficient for not
+    dp2_dt = 0.5 + 0.*q1*p1 # p2 = hcross * k2
+    dp3_dt = 0.*p1*q1
 
     return (dp1_dt, dp2_dt, dp3_dt)
