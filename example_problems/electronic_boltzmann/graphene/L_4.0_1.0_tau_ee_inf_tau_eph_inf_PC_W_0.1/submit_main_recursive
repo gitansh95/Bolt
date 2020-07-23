@@ -1,0 +1,51 @@
+#!/bin/bash
+#SBATCH -t 10:00:00       # walltime
+#SBATCH -N 2              # Number of nodes
+#SBATCH -n 8             # Number of MPI ranks
+#SBATCH -o out_%j         # Pathname of stdout
+#SBATCH -e err_%j         # Pathname of stderr
+#SBATCH -A w20_mcgpu     # Allocation
+#SBATCH --qos=standard    # QoS (standard, interactive, standby, large*, long*, high*)
+                          # See https://hpc.lanl.gov/scheduling_policies
+#SBATCH --mail-user=mc0710@gmail.com                                             
+#SBATCH --mail-type=BEGIN
+#SBATCH --mail-type=END
+#SBATCH --mail-type=FAIL
+
+module list
+pwd
+date
+
+# Arrayfire library
+export AF_PATH=/usr/projects/p18_ebhlight3d/arrayfire/arrayfire_install
+export PETSC_DIR=/usr/projects/p18_ebhlight3d/petsc_3.10.0_install
+export LD_LIBRARY_PATH=$AF_PATH/lib64:$LD_LIBRARY_PATH
+
+# Bolt as library
+export PYTHONPATH=/users/manic/bolt_master_integral_fix:$PYTHONPATH
+
+source activate /usr/projects/p18_ebhlight3d/bolt_env_2019.1/
+
+# Batch job
+filename=SUBMIT_INSTANCE
+maxnum=5
+if [ ! -e "$filename" ]; then
+  echo instance_number does not exist
+  echo 0 >> $filename
+else
+  echo instance_number exists
+  num=$(cat $filename)
+  echo instance number: $num
+  rm -rf $filename
+  echo $(($num+1)) >> $filename
+  if [ "$num" -gt "$maxnum" ]; then
+    echo Maximum number of instances reached
+    exit 1
+  fi
+fi
+export scriptname=submit_main_recursive
+export jobid=$(echo $SLURM_JOB_ID | sed -e 's/\..*//')
+sbatch -J child_of_$jobid --dependency=afterany:$jobid -o out_child_of_$jobid -e err_child_of_$jobid $scriptname
+
+srun python main.py
+
