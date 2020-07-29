@@ -250,12 +250,12 @@ def df_dt_fvm(f, self, term_to_return = 'all'):
 
 
         #TODO : This is a hack. Fix.
-        E1 = self.fields_solver.cell_centered_EM_fields[0]
-        E2 = self.fields_solver.cell_centered_EM_fields[1]
-        E3 = self.fields_solver.cell_centered_EM_fields[2]
-        B1 = self.fields_solver.cell_centered_EM_fields[3]
-        B2 = self.fields_solver.cell_centered_EM_fields[4]
-        B3 = self.fields_solver.cell_centered_EM_fields[5]
+        E1 = 0.*self.fields_solver.cell_centered_EM_fields[0]
+        E2 = 0.*self.fields_solver.cell_centered_EM_fields[1]
+        E3 = 0.*self.fields_solver.cell_centered_EM_fields[2]
+        B1 = 0.*self.fields_solver.cell_centered_EM_fields[3]
+        B2 = 0.*self.fields_solver.cell_centered_EM_fields[4]
+        B3 = 0.*self.fields_solver.cell_centered_EM_fields[5]
 
 
         # Fields solver object is passed to C_p where the get_fields method
