@@ -20,7 +20,6 @@ List of changes made for magnetic field
 
 1. params
     - fields_enabled = True
-2. src/electronic_boltzmann/advection_terms
-    - Manually set the value of one of the coefficients in C_p()
-3. lib/nonlinear/finite_volume/df_dt_fvm
+    - Set l_c = inf to disable magnetic field, or set to a finite value to enable field.
+2. lib/nonlinear/finite_volume/df_dt_fvm
     - Set values of E1, E2, E3, B1, B2, B3 to zero and passed these into the function C_p()
