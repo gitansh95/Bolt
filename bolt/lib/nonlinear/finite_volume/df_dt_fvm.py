@@ -1,4 +1,6 @@
 import arrayfire as af
+import pylab as pl
+import numpy as np
 
 # Importing Riemann solver used in calculating fluxes:
 from .riemann import riemann_solver
@@ -333,10 +335,26 @@ def df_dt_fvm(f, self, term_to_return = 'all'):
         front_flux_p3 = self._convert_to_q_expanded(front_flux_p3)
 
         d_flux_p1_dp1 = multiply((right_flux_p1 - left_flux_p1), 1 / self.dp1)
+
+        # TODO : Testing electric fields
+        # Set the df_dp1 term to zero for the first 2 and last 2 indices along the p_r dimension
+        N_g = self.physical_system.N_ghost
+
+        N_p1 = self.physical_system.N_p1
+        N_p2 = self.physical_system.N_p2
+
+        d_flux_p1_dp1 = self._convert_to_p_expanded(d_flux_p1_dp1)
+        d_flux_p1_dp1[:N_g, :, :, :]    = 0.
+        d_flux_p1_dp1[N_p1-N_g:, :, :, :] = 0.
+        
+        d_flux_p1_dp1 = self._convert_to_q_expanded(d_flux_p1_dp1)
+        #########
+
         d_flux_p2_dp2 = multiply((top_flux_p2   - bot_flux_p2 ), 1 / self.dp2)
         d_flux_p3_dp3 = multiply((front_flux_p3 - back_flux_p3), 1 / self.dp3)
 
         df_dt += -(d_flux_p1_dp1 + d_flux_p2_dp2 + d_flux_p3_dp3)
+
 
     if(term_to_return == 'd_flux_p1_dp1'):
         af.eval(d_flux_p1_dp1)

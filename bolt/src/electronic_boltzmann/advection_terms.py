@@ -234,17 +234,29 @@ def C_p(t, q1, q2, p1, p2, p3,
         p_r     = p1
         p_theta = p2
 
+        # TODO : Testing Electric fields
+        E_x = 1e-4
+        E_y = 0.
+
+        f_like = 0.*q1*p1 # An array with the dimensions of f
+
+        N_q1_local = f_like.dims()[2]
+        N_q2_local = f_like.dims()[3]
+
         if params.fermi_surface_shape == 'circle':
 
             # TODO : Interface with, instead of bypassing band_vel and effective_mass
 
-            dp1_dt =  0.*p1*q1 # Because v_p_theta is zero for a circular fermi surface
+            #dp1_dt =  0.*p1*q1 # Because v_p_theta is zero for a circular fermi surface
+            dp1_dt = af.tile(E_x*af.cos(p2) + E_y*af.sin(p2), 1, 1, N_q1_local, N_q2_local) + 0.*p1*q1
 
             if params.dispersion == 'linear' : 
-                dp2_dt = (params.fermi_velocity/params.l_c) * (p_F/p_r) + 0.*p1*q1
+                #dp2_dt = (params.fermi_velocity/params.l_c) * (p_F/p_r) + 0.*p1*q1
+                dp2_dt = af.tile((-E_x*af.sin(p2) + E_y*af.cos(p2))/p1, 1, 1, N_q1_local, N_q2_local) + 0.*p1*q1
 
             elif params.dispersion == 'quadratic' :
-                dp2_dt =  params.fermi_velocity/params.l_c + 0.*p1*q1
+                #dp2_dt =  params.fermi_velocity/params.l_c + 0.*p1*q1
+                dp2_dt = af.tile((-E_x*af.sin(p2) + E_y*af.cos(p2))/p1, 1, 1, N_q1_local, N_q2_local) + 0.*p1*q1
 
         else : 
             raise NotImplementedError('Unsupported shape of fermi surface for magnetotansport')
