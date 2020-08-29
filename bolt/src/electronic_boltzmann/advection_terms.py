@@ -235,8 +235,8 @@ def C_p(t, q1, q2, p1, p2, p3,
         p_theta = p2
 
         # TODO : Testing Electric fields
-        E_x = 1e-4
-        E_y = 0.
+        E_x = params.E_x
+        E_y = params.E_y
 
         f_like = 0.*q1*p1 # An array with the dimensions of f
 
@@ -248,7 +248,7 @@ def C_p(t, q1, q2, p1, p2, p3,
             # TODO : Interface with, instead of bypassing band_vel and effective_mass
 
             #dp1_dt =  0.*p1*q1 # Because v_p_theta is zero for a circular fermi surface
-            dp1_dt = af.tile(E_x*af.cos(p2) + E_y*af.sin(p2), 1, 1, N_q1_local, N_q2_local) + 0.*p1*q1
+            dp1_dt = 0.*af.tile(E_x*af.cos(p2) + E_y*af.sin(p2), 1, 1, N_q1_local, N_q2_local) + 0.*p1*q1
 
             if params.dispersion == 'linear' : 
                 #dp2_dt = (params.fermi_velocity/params.l_c) * (p_F/p_r) + 0.*p1*q1

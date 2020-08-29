@@ -343,11 +343,15 @@ def df_dt_fvm(f, self, term_to_return = 'all'):
         N_p1 = self.physical_system.N_p1
         N_p2 = self.physical_system.N_p2
 
-        d_flux_p1_dp1 = self._convert_to_p_expanded(d_flux_p1_dp1)
-        d_flux_p1_dp1[:N_g, :, :, :]    = 0.
-        d_flux_p1_dp1[N_p1-N_g:, :, :, :] = 0.
+
+        f_tmp = self._convert_to_p_expanded(f.copy())
         
-        d_flux_p1_dp1 = self._convert_to_q_expanded(d_flux_p1_dp1)
+        for i in range(N_g):
+            f_tmp[i, :, :, :]    = f_tmp[N_g, :, :, :]
+            f_tmp[-i-1, :, :, :] = f_tmp[-N_g-1, :, :, :]
+
+        f = self._convert_to_q_expanded(f_tmp)
+
         #########
 
         d_flux_p2_dp2 = multiply((top_flux_p2   - bot_flux_p2 ), 1 / self.dp2)

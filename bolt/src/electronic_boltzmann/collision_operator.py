@@ -15,6 +15,7 @@ from bolt.src.utils.integral_over_p import integral_over_p
 
 import domain
 
+import pylab as pl
 
 def RTA(f, t, q1, q2, p1, p2, p3, moments, params, flag = False):
     """
@@ -73,16 +74,56 @@ def RTA(f, t, q1, q2, p1, p2, p3, moments, params, flag = False):
         # Activate the following lines to enable normal operation of collision
         # operator
         if (params.p_dim==1):
+            #TODO : Testing electric fields at T = 0
+            #delta_mu = 1e-2 # Here we think of mu_0 as the natural unit
+            #L_x   = 4. # um (length of device - TODO : DO not hardcode here!)
+            #E_x   = -delta_mu/L_x
+
+
             C_f = -(  f_tmp - f0_defect_constant_T(f_tmp, p_x, p_y, p_z, params) \
                    ) / params.tau_defect(q1, q2, p_x, p_y, p_z) \
                   -(  f_tmp - f0_ee_constant_T(f_tmp, p_x, p_y, p_z, params)
                   ) / params.tau_ee(q1, q2, p_x, p_y, p_z)
 
         elif (params.p_dim==2):
+            
+            # TODO : Testing E field for finite T polar
+            E_x = params.E_x # Taken to be the same value as in advection_terms.py
+            E_y = params.E_y
+
+            theta = p2
+            N_q1_local = f_tmp.dims()[2]
+            N_q2_local = f_tmp.dims()[3]
+
+            # vels for defining f0, the equilibrium distrubution function
+            vel_x = 0.
+            vel_y = 0.
+
+            E_r = E_x*af.cos(theta)
+
+            f_0 = (1./(af.exp( (params.E_band - vel_x*p_x
+                                              - vel_y*p_y
+                                              - params.initial_mu
+                               )/(params.boltzmann_constant*params.initial_temperature)
+                             ) + 1. ))
+
+            # g taken as an intermediate function for ease of differentiation
+            g = (params.E_band - vel_x*p_x
+                               - vel_y*p_y 
+                               - params.initial_mu
+                )/(params.initial_temperature*params.boltzmann_constant)
+
+            dg_dp1  = (1 - vel_x*af.cos(p2) - vel_y*af.sin(p2))/(params.initial_temperature*params.boltzmann_constant)
+            df0_dp1 = -(af.exp(g)/((af.exp(g)+1)**2)) * dg_dp1
+
+
+            E = E_r * df0_dp1
+            E = af.tile(E, 1, 1, N_q1_local, N_q2_local)
+            
             C_f = -(  f - f0_defect(f, p_x, p_y, p_z, params) \
                    ) / params.tau_defect(q1, q2, p_x, p_y, p_z) \
                   -(  f - f0_ee_constant_T(f, p_x, p_y, p_z, params)
-                  ) / params.tau_ee(q1, q2, p_x, p_y, p_z)
+                  ) / params.tau_ee(q1, q2, p_x, p_y, p_z) + E
 
     # When (f - f0) is NaN. Dividing by np.inf doesn't give 0
     # TODO: WORKAROUND

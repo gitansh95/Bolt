@@ -31,7 +31,7 @@ N_p1     =  32 # Set equal to 1 for 1D polar
 # p1_start and p1_end are set such that p1_center is mu
 
 # Uncomment the following for the 2D polar representation of momentum space
-p1_start = [(params.initial_mu - 8.*params.boltzmann_constant*params.initial_temperature)/params.fermi_velocity]
+p1_start = [(params.initial_mu - 16.*params.boltzmann_constant*params.initial_temperature)/params.fermi_velocity]
 p1_end   = [(params.initial_mu + 16.*params.boltzmann_constant*params.initial_temperature)/params.fermi_velocity]
 
 # Uncomment the following for the 1D polar representation of momentum space

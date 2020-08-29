@@ -78,7 +78,7 @@ electrostatic_solver_every_nth_step = 1000000
 
 
 # Time parameters:
-dt      = 0.025/16 # ps
+dt      = 0.025/32 # ps
 t_final = 1000     # ps
 
 
@@ -86,7 +86,7 @@ t_final = 1000     # ps
 dump_steps = 5
 dump_dist_after = 1600
 # Set to zero for no file-writing
-dt_dump_f       = 1000*dt #ps
+dt_dump_f       = 50*dt #ps
 # ALWAYS set dump moments and dump fields at same frequency:
 dt_dump_moments = dt_dump_fields = 50*dt #ps
 
@@ -136,11 +136,15 @@ contact_geometry      = "straight" # Contacts on either side of the device
                                    # For contacts on the same side, use 
                                    # contact_geometry = "turn_around"
 
-initial_temperature = 12e-4
+initial_temperature = 3e-4
 initial_mu          = 0.015
 vel_drift_x_in      = 1e-4*fermi_velocity
 vel_drift_x_out     = 1e-4*fermi_velocity
 AC_freq             = 1./100 # ps^-1
+
+# TODO : Testing electric fields
+E_x = 1e-4
+E_y = 0.
 
 l_c     = 0.5 # Cyclotron radius - See src/electronic_boltzmann/advection_terms.py for description
 B3_mean = 1. # T
