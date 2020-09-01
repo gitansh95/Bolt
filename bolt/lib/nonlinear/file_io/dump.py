@@ -103,6 +103,10 @@ def dump_moments(self, file_name):
         attributes.remove('integral_over_p')
     if('params' in attributes):
         attributes.remove('params')
+    if('af' in attributes):
+        attributes.remove('af')
+    for i in range(len(attributes)):
+        print("i = ", i, attributes[i])
 
     for i in range(len(attributes)):
         #print("i = ", i, attributes[i])
