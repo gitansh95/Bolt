@@ -234,18 +234,24 @@ def C_p(t, q1, q2, p1, p2, p3,
         p_r     = p1
         p_theta = p2
         p_F     = params.fermi_momentum_magnitude(p_theta)
+        
+        #TODO : Testing electric fields
+        #E_x = A*(-10*(1 - af.tanh(10*(q1-0.5) - 1)**2))
+        #E_y = 0.
+
+        E_x, E_y = params.electric_field(q1, q2, p1, p2, p3)
 
         if params.fermi_surface_shape == 'circle':
 
             # TODO : Interface with, instead of bypassing band_vel and effective_mass
 
-            dp1_dt =  0.*p1*q1 # Because v_p_theta is zero for a circular fermi surface
+            dp1_dt =  E_x*af.cos(p2) + E_y*af.sin(p2) + 0.*p1*q1 # Because v_p_theta is zero for a circular fermi surface
 
             if params.dispersion == 'linear' : 
-                dp2_dt = (params.fermi_velocity/params.l_c) * (p_F/p_r) + 0.*p1*q1
+                dp2_dt = (-E_x*af.sin(p2) + E_y*af.cos(p2))/p1 + 0.*p1*q1
 
             elif params.dispersion == 'quadratic' :
-                dp2_dt =  params.fermi_velocity/params.l_c + 0.*p1*q1
+                dp2_dt =  (-E_x*af.sin(p2) + E_y*af.cos(p2))/p1 + 0.*p1*q1
 
         else : 
             raise NotImplementedError('Unsupported shape of fermi surface for magnetotansport')
@@ -274,14 +280,16 @@ def C_p(t, q1, q2, p1, p2, p3,
         p_x = p1
         p_y = p2
 
-        if params.dispersion == 'quadratic':
+        #TODO : Testing electric fields
+        #E_x = A*(-10*(1 - af.tanh(10*(q1-2) - 1)**2))
+        #E_y = 0.
 
-            dp1_dt = -p_y*params.fermi_velocity/params.l_c + 0.*q1*p1 # p1 = hcross * k1
-            dp2_dt =  p_x*params.fermi_velocity/params.l_c + 0.*q1*p1 # p2 = hcross * k2
-            dp3_dt =  0.*p1*q1
-        
-        else : 
-            raise NotImplementedError('Cartesian coordinates in momentum space cannot be used with linear dispersion for magnetotransport')
+        E_x, E_y = params.electric_field(q1, q2, p1, p2, p3)
+    
+        dp1_dt = E_x + 0.*q1*p1 # p1 = hcross * k1
+        dp2_dt = E_y + 0.*q1*p1 # p2 = hcross * k2
+        dp3_dt =  0.*p1*q1
+    
 
 
     return (dp1_dt, dp2_dt, dp3_dt)
