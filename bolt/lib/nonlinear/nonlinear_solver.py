@@ -356,6 +356,16 @@ class nonlinear_solver(object):
         self.physical_system.params.q2_start_local_bottom = self.q2_start_local
         
 
+        # TODO : Testing electric fields with masks
+        physical_system.params._i_q1_start = _i_q1_start
+        physical_system.params._i_q2_start = _i_q2_start
+
+        print("nonlinear.py: rank = ", self._comm.rank,
+              "(_i_q1_start, _i_q2_start) =  (", 
+              _i_q1_start, _i_q2_start, ")"
+             )
+
+
         print("nonlinear.py: rank = ", self._comm.rank,
               "(q1_start_local, q2_start_local) =  (", 
               self.q1_start_local, self.q2_start_local, ")"
