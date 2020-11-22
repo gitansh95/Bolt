@@ -30,7 +30,7 @@ right_dirichlet_boundary_index  = 194  # Default value is N_q1-1
 
 # Indices in q2 where functions defined in boundary_conditions.py will be applied
 bottom_dirichlet_boundary_index = 0  # Default value is 0
-top_dirichlet_boundary_index    = 145 # Default value is N_q2-1
+top_dirichlet_boundary_index    = 155 # Default value is N_q2-1
 
 
 # Specify patches over which boundary condition functions are not applied
