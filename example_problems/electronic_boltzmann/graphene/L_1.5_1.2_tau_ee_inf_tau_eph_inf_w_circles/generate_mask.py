@@ -96,7 +96,7 @@ def electric_field():
     make_circle(discrete_mask, int(N_buffer + 1.33*115), int(1.33*80), r, A)
     make_circle(discrete_mask, int(N_buffer + 1.33*115), int(1.33*100),r, A)
     
-    filter_size    = 5
+    filter_size    = 7
     spatial_filter = 1./filter_size**2.*np.ones([filter_size, filter_size])
     discrete_mask_2  = convolve2d(discrete_mask,
                                 spatial_filter,
