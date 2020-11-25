@@ -144,8 +144,13 @@ zero_temperature    = (p_dim==1)
 
 # Number of devices(GPUs/Accelerators) on each node:
 num_devices = 6
-manual_device_allocation = False
-device_allocation        = [0, 0, 0, 0, 0, 1, 1, 1, 1] # No. of items in list should match number of mpiprocs
+manual_device_allocation = True
+device_allocation        = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+                            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
+                            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, \
+                            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, \
+                            4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, \
+                            5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5] # No. of items in list should match number of mpiprocs
 dont_compute             = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 blocked_left_bc          = []
