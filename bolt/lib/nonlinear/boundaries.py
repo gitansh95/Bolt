@@ -239,6 +239,8 @@ def apply_mirror_bcs_f_cartesian(self, boundary, mirror_start=None, mirror_end=N
     # TODO : Implement code to allow for reflections at arbitrary angles
 
     N_g = self.N_ghost
+    dq1 = self.dq1
+    dq2 = self.dq2
 
     if(boundary == 'left'):
         
@@ -254,7 +256,7 @@ def apply_mirror_bcs_f_cartesian(self, boundary, mirror_start=None, mirror_end=N
         # they are mirroring. To do this we flip the axis that 
         # contains the variation in p1
         if ((mirror_start != None) and (mirror_end != None)):
-            mirror_indices = (self.q2_center > mirror_start) & (self.q2_center < mirror_end)
+            mirror_indices = (self.q2_center > mirror_start - dq2) & (self.q2_center < mirror_end + dq2)
             mirror_indices = af.tile(mirror_indices, self.N_p1*self.N_p2) 
             self.f[:, :, :N_g] = \
                 mirror_indices[:, :, :N_g]*self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(tmp),
@@ -281,7 +283,7 @@ def apply_mirror_bcs_f_cartesian(self, boundary, mirror_start=None, mirror_end=N
         # they are mirroring. To do this we flip the axis that 
         # contains the variation in p1
         if ((mirror_start != None) and (mirror_end != None)):
-            mirror_indices = (self.q2_center > mirror_start) & (self.q2_center < mirror_end)
+            mirror_indices = (self.q2_center > mirror_start - dq2) & (self.q2_center < mirror_end + dq2)
             mirror_indices = af.tile(mirror_indices, self.N_p1*self.N_p2) 
             self.f[:, :, -N_g:] = \
                 mirror_indices[:, :, -N_g:]*self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(tmp),
@@ -308,7 +310,7 @@ def apply_mirror_bcs_f_cartesian(self, boundary, mirror_start=None, mirror_end=N
         # they are mirroring. To do this we flip the axis that 
         # contains the variation in p2
         if ((mirror_start != None) and (mirror_end != None)):
-            mirror_indices = (self.q1_center > mirror_start) & (self.q1_center < mirror_end)
+            mirror_indices = (self.q1_center > mirror_start - dq1) & (self.q1_center < mirror_end + dq1)
             mirror_indices = af.tile(mirror_indices, self.N_p1*self.N_p2) 
             self.f[:, :, :, :N_g] = \
                 mirror_indices[:, :, :, :N_g]*self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(tmp), 
@@ -336,7 +338,7 @@ def apply_mirror_bcs_f_cartesian(self, boundary, mirror_start=None, mirror_end=N
         # they are mirroring. To do this we flip the axis that 
         # contains the variation in p2
         if ((mirror_start != None) and (mirror_end != None)):
-            mirror_indices = (self.q1_center > mirror_start) & (self.q1_center < mirror_end)
+            mirror_indices = (self.q1_center > mirror_start - dq1) & (self.q1_center < mirror_end + dq1)
             mirror_indices = af.tile(mirror_indices, self.N_p1*self.N_p2) 
             self.f[:, :, :, -N_g:] = \
                 mirror_indices[:, :, :, -N_g:]*self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(tmp), 
