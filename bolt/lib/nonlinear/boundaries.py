@@ -225,7 +225,7 @@ def apply_dirichlet_bcs_f(self, boundary):
 
     return
 
-def apply_mirror_bcs_f_cartesian(self, boundary):
+def apply_mirror_bcs_f_cartesian(self, boundary, mirror_start=None, mirror_end=None):
     """
     Applies mirror boundary conditions along boundary specified 
     for the distribution function when momentum space is on a cartesian grid
@@ -241,69 +241,111 @@ def apply_mirror_bcs_f_cartesian(self, boundary):
     N_g = self.N_ghost
 
     if(boundary == 'left'):
+        
+        tmp = self.f.copy()
         # x-0-x-0-x-0-|-0-x-0-x-0-x-....
         #   0   1   2   3   4   5
         # For mirror boundary conditions:
         # 0 = 5; 1 = 4; 2 = 3;
-        self.f[:, :, :N_g] = af.flip(self.f[:, :, N_g:2 * N_g], 2)
+        tmp[:, :, :N_g] = af.flip(tmp[:, :, N_g:2 * N_g], 2)
         
         # The points in the ghost zone need to have direction 
         # of velocity reversed as compared to the physical zones 
         # they are mirroring. To do this we flip the axis that 
         # contains the variation in p1
-        self.f[:, :, :N_g] = \
-            self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(self.f), 
+        if ((mirror_start != None) and (mirror_end != None)):
+            mirror_indices = (self.q2_center > mirror_start) & (self.q2_center < mirror_end)
+            mirror_indices = af.tile(mirror_indices, self.N_p1*self.N_p2) 
+            self.f[:, :, :N_g] = \
+                mirror_indices[:, :, :N_g]*self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(tmp),
+                                                0
+                                               )
+                                       )[:, :, :N_g] + (1-mirror_indices)[:, :, :N_g]*self.f[:, :, :N_g]
+        else:        
+            self.f[:, :, :N_g] = \
+                self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(tmp),
                                                 0
                                                )
                                        )[:, :, :N_g]
 
     elif(boundary == 'right'):
+        tmp = self.f.copy()
         # ...-x-0-x-0-x-0-|-0-x-0-x-0-x
         #      -6  -5  -4  -3  -2  -1
         # For mirror boundary conditions:
         # -1 = -6; -2 = -5; -3 = -4;
-        self.f[:, :, -N_g:] = af.flip(self.f[:, :, -2 * N_g:-N_g], 2)
+        tmp[:, :, -N_g:] = af.flip(tmp[:, :, -2 * N_g:-N_g], 2)
 
         # The points in the ghost zone need to have direction 
         # of velocity reversed as compared to the physical zones 
         # they are mirroring. To do this we flip the axis that 
         # contains the variation in p1
-        self.f[:, :, -N_g:] = \
-            self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(self.f), 
+        if ((mirror_start != None) and (mirror_end != None)):
+            mirror_indices = (self.q2_center > mirror_start) & (self.q2_center < mirror_end)
+            mirror_indices = af.tile(mirror_indices, self.N_p1*self.N_p2) 
+            self.f[:, :, -N_g:] = \
+                mirror_indices[:, :, -N_g:]*self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(tmp),
+                                                0
+                                               )
+                                       )[:, :, -N_g:] + (1-mirror_indices)[:, :, -N_g:]*self.f[:, :, -N_g:]
+        else : 
+            self.f[:, :, -N_g:] = \
+                self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(tmp),
                                                 0
                                                )
                                        )[:, :, -N_g:]
 
     elif(boundary == 'bottom'):
+        tmp = self.f.copy()
         # x-0-x-0-x-0-|-0-x-0-x-0-x-....
         #   0   1   2   3   4   5
         # For mirror boundary conditions:
         # 0 = 5; 1 = 4; 2 = 3;
-        self.f[:, :, :, :N_g] = af.flip(self.f[:, :, :, N_g:2 * N_g], 3)
+        tmp[:, :, :, :N_g] = af.flip(tmp[:, :, :, N_g:2 * N_g], 3)
 
         # The points in the ghost zone need to have direction 
         # of velocity reversed as compared to the physical zones 
         # they are mirroring. To do this we flip the axis that 
         # contains the variation in p2
-        self.f[:, :, :, :N_g] = \
-            self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(self.f), 
+        if ((mirror_start != None) and (mirror_end != None)):
+            mirror_indices = (self.q1_center > mirror_start) & (self.q1_center < mirror_end)
+            mirror_indices = af.tile(mirror_indices, self.N_p1*self.N_p2) 
+            self.f[:, :, :, :N_g] = \
+                mirror_indices[:, :, :, :N_g]*self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(tmp), 
+                                                1
+                                               )
+                                       )[:, :, :, :N_g] + (1-mirror_indices)[:, :, :, :N_g]*self.f[:, :, :, :N_g]
+        else :
+            self.f[:, :, :, :N_g] = \
+                self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(tmp), 
                                                 1
                                                )
                                        )[:, :, :, :N_g]
 
     elif(boundary == 'top'):
+        tmp = self.f.copy()
+
         # ...-x-0-x-0-x-0-|-0-x-0-x-0-x
         #      -6  -5  -4  -3  -2  -1
         # For mirror boundary conditions:
         # -1 = -6; -2 = -5; -3 = -4;
-        self.f[:, :, :, -N_g:] = af.flip(self.f[:, :, :, -2 * N_g:-N_g], 3)
+        tmp[:, :, :, -N_g:] = af.flip(tmp[:, :, :, -2 * N_g:-N_g], 3)
 
         # The points in the ghost zone need to have direction 
         # of velocity reversed as compared to the physical zones 
         # they are mirroring. To do this we flip the axis that 
         # contains the variation in p2
-        self.f[:, :, :, -N_g:] = \
-            self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(self.f), 
+        if ((mirror_start != None) and (mirror_end != None)):
+            mirror_indices = (self.q1_center > mirror_start) & (self.q1_center < mirror_end)
+            mirror_indices = af.tile(mirror_indices, self.N_p1*self.N_p2) 
+            self.f[:, :, :, -N_g:] = \
+                mirror_indices[:, :, :, -N_g:]*self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(tmp), 
+                                                1
+                                               )
+                                       )[:, :, :, -N_g:] + (1-mirror_indices)[:, :, :, -N_g:]*self.f[:, :, :, -N_g:]
+        else :
+            self.f[:, :, :, -N_g:] = \
+                self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(tmp), 
                                                 1
                                                )
                                        )[:, :, :, -N_g:]
@@ -408,8 +450,17 @@ def apply_mirror_bcs_f_polar2D_old(self, boundary):
         # with the x-axis, a collision with the top boundary changes
         # the angle of momentum after reflection to (2*pi - \theta) = (-\theta)
         # To do this we flip the axis that contains the variation in p_theta
-        self.f[:, :, :, -N_g:] = \
-            self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(self.f), 
+        if ((mirror_start != None) and (mirror_end != None)):
+            mirror_indices = (self.q1_center > mirror_start) & (self.q1_center < mirror_end)
+            mirror_indices = af.tile(mirror_indices, self.N_p2) 
+            self.f[:, :, :, -N_g:] = \
+                mirror_indices[:, :, :, -N_g:]*self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(tmp), 
+                                                1
+                                               )
+                                       )[:, :, :, -N_g:] + (1-mirror_indices)[:, :, :, -N_g:]*self.f[:, :, :, -N_g:]
+        else :
+            self.f[:, :, :, -N_g:] = \
+                self._convert_to_q_expanded(af.flip(self._convert_to_p_expanded(tmp), 
                                                 1
                                                )
                                        )[:, :, :, -N_g:]
@@ -828,7 +879,9 @@ def apply_bcs_f(self):
         if(i_q2_start == int(horizontal_boundaries[index])):
     
             if (self.physical_system.params.p_space_grid =='cartesian'):
-                apply_mirror_bcs_f_cartesian(self, 'bottom')
+                apply_mirror_bcs_f_cartesian(self, 'bottom',
+                    mirror_start = horizontal_boundary_lims[index][0],
+                    mirror_end   = horizontal_boundary_lims[index][1])
             elif (self.physical_system.params.p_space_grid == 'polar2D'):
                 apply_mirror_bcs_f_polar2D(self, 'bottom',
                      mirror_start = horizontal_boundary_lims[index][0],
@@ -841,7 +894,9 @@ def apply_bcs_f(self):
         if(i_q2_end == int(horizontal_boundaries[index]) - 1):
     
             if (self.physical_system.params.p_space_grid == 'cartesian'):
-                apply_mirror_bcs_f_cartesian(self, 'top')
+                apply_mirror_bcs_f_cartesian(self, 'top',
+                    mirror_start = horizontal_boundary_lims[index][0],
+                    mirror_end   = horizontal_boundary_lims[index][1])
             elif (self.physical_system.params.p_space_grid == 'polar2D'):
                 apply_mirror_bcs_f_polar2D(self, 'top',
                      mirror_start = horizontal_boundary_lims[index][0],
@@ -856,7 +911,9 @@ def apply_bcs_f(self):
         if(i_q1_start == int(vertical_boundaries[index])):
     
             if (self.physical_system.params.p_space_grid =='cartesian'):
-                apply_mirror_bcs_f_cartesian(self, 'left')
+                apply_mirror_bcs_f_cartesian(self, 'left',
+                     mirror_start = vertical_boundary_lims[index][0],
+                     mirror_end   = vertical_boundary_lims[index][1])
             elif (self.physical_system.params.p_space_grid == 'polar2D'):
                 apply_mirror_bcs_f_polar2D(self, 'left',
                      mirror_start = vertical_boundary_lims[index][0],
@@ -869,7 +926,9 @@ def apply_bcs_f(self):
         if(i_q1_end == int(vertical_boundaries[index]) - 1):
     
             if (self.physical_system.params.p_space_grid == 'cartesian'):
-                apply_mirror_bcs_f_cartesian(self, 'right')
+                apply_mirror_bcs_f_cartesian(self, 'right',
+                     mirror_start = vertical_boundary_lims[index][0],
+                     mirror_end   = vertical_boundary_lims[index][1])
             elif (self.physical_system.params.p_space_grid == 'polar2D'):
                 apply_mirror_bcs_f_polar2D(self, 'right',
                      mirror_start = vertical_boundary_lims[index][0],
