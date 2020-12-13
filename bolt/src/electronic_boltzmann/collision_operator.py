@@ -66,6 +66,25 @@ def RTA(f, t, q1, q2, p1, p2, p3, moments, params, flag = False):
     if params.zero_temperature:
         f_tmp = f.copy() + 0.5
 
+    
+    # TODO : Testing electric fields
+    N_p  = f.dims()[0]
+    N_q1 = f.dims()[2]
+    N_q2 = f.dims()[3]
+
+    T         = af.constant(params.initial_temperature, d0 = N_p, d1 = 1, d2 = N_q1, d3 = N_q2)
+    E_upper   = af.tile(params.E_band, d0 = 1, d1 = 1, d2 = N_q1, d3 = N_q2)
+    k         = params.boltzmann_constant
+
+
+    f0 = (1./(af.exp( (E_upper - params.initial_mu
+                    )/(k*T) 
+                  ) + 1.
+           ))
+
+    f_tmp = f_tmp + f0
+
+
     if (params.disable_collision_op):
         # Activate the following line to disable the collision operator
         C_f = 0.*f
@@ -79,9 +98,9 @@ def RTA(f, t, q1, q2, p1, p2, p3, moments, params, flag = False):
                   ) / params.tau_ee(q1, q2, p_x, p_y, p_z)
 
         elif (params.p_dim==2):
-            C_f = -(  f - f0_defect(f, p_x, p_y, p_z, params) \
+            C_f = -(  f_tmp - f0_defect_constant_T(f_tmp, p_x, p_y, p_z, params) \
                    ) / params.tau_defect(q1, q2, p_x, p_y, p_z) \
-                  -(  f - f0_ee_constant_T(f, p_x, p_y, p_z, params)
+                  -(  f_tmp - f0_ee(f_tmp, p_x, p_y, p_z, params)
                   ) / params.tau_ee(q1, q2, p_x, p_y, p_z)
 
     # When (f - f0) is NaN. Dividing by np.inf doesn't give 0
@@ -92,7 +111,7 @@ def RTA(f, t, q1, q2, p1, p2, p3, moments, params, flag = False):
 
     params.j_x = af.sum(af.broadcast(multiply, f, p_x), 0)
     params.j_y = af.sum(af.broadcast(multiply, f, p_y), 0)
- 
+
     af.eval(C_f)
     return(C_f)
 
