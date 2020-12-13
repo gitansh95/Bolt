@@ -1,0 +1,104 @@
+27,28c27,28
+< import bolt.src.electronic_boltzmann.moment_defs \
+<     as moment_defs
+---
+> import bolt.src.electronic_boltzmann.moments \
+>     as moments
+31,40c31
+< # Create required folders if they do not exist already
+< #if not os.path.isdir("dump_f"):
+< #    os.system("mkdir dump_f")
+< #if not os.path.isdir("dump_moments"):
+< #    os.system("mkdir dump_moments")
+< #if not os.path.isdir("dump_lagrange_multipliers"):
+< #    os.system("mkdir dump_lagrange_multipliers")
+< #if not os.path.isdir("images"):
+< #    os.system("mkdir images")
+< 
+---
+> # TODO : Create required folders if they do not exist already
+49c40
+<                          moment_defs
+---
+>                          moments
+71a63
+>       dump_time_array = np.loadtxt("dump_time_array.txt").tolist()
+84,85c76,77
+<                              params.vel_drift_x, params.vel_drift_y,
+<                              params.j_x, params.j_y],
+---
+>                              params.vel_drift_x, params.vel_drift_y
+>                             ],
+98,101c90,118
+< assert(params.dt_dump_f > dt)
+< assert(params.dt_dump_moments > dt)
+< assert(params.dt_dump_fields > dt)
+< 
+---
+> assert(params.dt_dump_f >= dt)
+> assert(params.dt_dump_moments >= dt)
+> assert(params.dt_dump_fields >= dt)
+> 
+> # Dump information about the spatial coordinate transformation
+> nls.dump_coordinate_info([params.x,
+>                  params.y,
+>                  params.q1,
+>                  params.q2,
+>                  params.dq1_dx,
+>                  params.dq1_dy,
+>                  params.dq2_dx,
+>                  params.dq2_dy,
+>                  params.dx_dq1,
+>                  params.dx_dq2,
+>                  params.dy_dq1,
+>                  params.dy_dq2,
+>                  params.sqrt_det_g,
+>                  params.x_top_center,
+>                  params.y_top_center,
+>                  params.x_right_center,
+>                  params.y_right_center,
+>                  params.x_bottom_center,
+>                  params.y_bottom_center,
+>                  params.x_left_center,
+>                  params.y_left_center],
+>                  'coords',
+>                  'coords'
+>                 )
+114d130
+< nls.f = af.select(nls.f < 1e-20, 1e-20, nls.f)
+117,119d132
+<     if (time_elapsed + dt > t_final):
+<         dt = t_final - time_elapsed
+< 
+125a139,140
+>     dump_steps = params.dump_steps
+> 
+139,140c154,155
+<                              params.vel_drift_x, params.vel_drift_y,
+<                              params.j_x, params.j_y],
+---
+>                              params.vel_drift_x, params.vel_drift_y
+>                                 ],
+153a169,171
+>     #if (params.dont_compute[params.rank]):
+>     #    continue
+>     #else:
+154a173
+> 
+160,173c179
+<     # Floors
+<     nls.f     = af.select(nls.f < 1e-20, 1e-20, nls.f)
+< 
+<     density = nls.compute_moments('density')
+<     print("rank = ", params.rank, "\n",
+<           "     <mu>    = ", af.mean(params.mu[0, 0, N_g:-N_g, N_g:-N_g]), "\n",
+<           "     max(mu) = ", af.max(params.mu[0, 0, N_g:-N_g, N_g:-N_g]), "\n",
+<           "     <n>     = ", af.mean(density[0, 0, N_g:-N_g, N_g:-N_g]), "\n",
+<           "     max(n)  = ", af.max(density[0, 0, N_g:-N_g, N_g:-N_g]), "\n"
+<          )
+<     PETSc.Sys.Print("--------------------\n")
+< 
+< PETSc.Sys.Print("Time step =", time_step, ", Time =", time_elapsed, "Final time = ", t_final, "Delta_t = ", t_final - time_elapsed)
+< nls.dump_distribution_function('dump_f/f_laststep')
+---
+> #nls.dump_distribution_function('dump_f/t_laststep')
